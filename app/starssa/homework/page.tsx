@@ -45,6 +45,12 @@ export default function HomeworkPage() {
 
   return (
     <div className="space-y-6">
+      <div className="mb-4">
+        <a href="/starssa" className="inline-flex items-center text-blue-600 hover:underline">
+          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          Orqaga (Asosiy panelga)
+        </a>
+      </div>
       <h1 className="text-2xl font-bold">Uyga vazifalar</h1>
       
       <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">

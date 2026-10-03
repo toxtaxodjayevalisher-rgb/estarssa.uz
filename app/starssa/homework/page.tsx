@@ -44,13 +44,26 @@ export default function HomeworkPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="mb-4">
-        <a href="/starssa" className="inline-flex items-center text-blue-600 hover:underline">
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Orqaga (Asosiy panelga)
-        </a>
+    <div className="flex h-screen bg-gray-100">
+      <div className="w-64 bg-slate-900 text-white flex flex-col">
+        <div className="p-6 text-2xl font-bold border-b border-slate-700 text-center">E-STARSSA</div>
+        <nav className="flex-1 p-4 space-y-2">
+          <a href="/starssa" className="block px-4 py-2 hover:bg-slate-800 rounded">Asosiy</a>
+          <a href="/starssa/students" className="block px-4 py-2 hover:bg-slate-800 rounded">O'quvchilar</a>
+          <a href="/starssa/attendance" className="block px-4 py-2 hover:bg-slate-800 rounded">Davomat Qilish</a>
+          <a href="/starssa/history" className="block px-4 py-2 hover:bg-slate-800 rounded">Davomat Tarixi</a>
+          <a href="/starssa/homework" className="block px-4 py-2 bg-blue-600 rounded">Uyga Vazifa</a>
+        </nav>
+        <div className="p-4 border-t border-slate-700">
+          <p className="text-sm">Akkaunt: STARSSA</p>
+          <button className="mt-2 w-full bg-red-600 px-4 py-2 rounded text-white text-sm" onClick={() => {
+            fetch('/api/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login');
+          }}>Chiqish</button>
+        </div>
       </div>
+      <div className="flex-1 p-8 overflow-y-auto text-black relative">
+        <div className="space-y-6">
+      
       <h1 className="text-2xl font-bold">Uyga vazifalar</h1>
       
       <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">

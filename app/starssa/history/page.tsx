@@ -65,7 +65,7 @@ export default function StarssaHistory() {
   return (
     <div className="flex h-screen bg-gray-100">
         <nav className="w-64 bg-slate-900 text-white flex flex-col p-4 space-y-2">
-          <div className="text-2xl font-bold border-b border-slate-700 text-center pb-4 mb-4">E-STARSSA</div>
+          <div className="p-6 text-2xl font-serif font-bold border-b border-slate-700 text-center text-white tracking-widest">E-STARSSA</div>
           <Link href="/starssa" className="block px-4 py-2 hover:bg-slate-800 rounded">Asosiy</Link>
           <Link href="/starssa/students" className="block px-4 py-2 hover:bg-slate-800 rounded">O'quvchilar</Link>
           <Link href="/starssa/attendance" className="block px-4 py-2 hover:bg-slate-800 rounded">Davomat Qilish</Link>

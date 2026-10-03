@@ -54,12 +54,14 @@ export default function HomeworkPage() {
           <a href="/starssa/history" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Davomat Tarixi</a>
           <a href="/starssa/homework" className="block px-4 py-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/30 font-bold transition-all transform hover:scale-[1.02]">Uyga Vazifa</a>
         </nav>
-        <div className="p-4 border-t border-slate-700">
-          <p className="text-sm">Akkaunt: STARSSA</p>
-          <button className="mt-2 w-full bg-red-600 px-4 py-3 rounded-xl text-white font-bold active:scale-95 transition-all shadow-md shadow-red-500/30 hover:bg-red-700 text-sm" onClick={() => {
-            fetch('/api/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login');
-          }}>Chiqish</button>
-        </div>
+        <div className="p-4 mt-auto border-t border-slate-800">
+        <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-600 px-4 py-3 rounded-xl text-red-500 hover:text-white font-semibold transition-all group">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Chiqish
+        </button>
+      </div>
       </div>
       <div className="flex-1 p-8 overflow-y-auto text-black relative">
         <div className="space-y-6">

@@ -3,7 +3,9 @@ import { useState, useEffect } from 'react';
 
 export default function HomeworkPage() {
   const [homeworks, setHomeworks] = useState([]);
-  const [formData, setFormData] = useState({ date: '', group_name: '', subject: '', content: '' });
+  const [date, setDate] = useState('');
+  const [group_name, setGroupName] = useState('');
+  const [tasks, setTasks] = useState([{ subject: '', content: '' }]);
   const [image, setImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -16,10 +18,9 @@ export default function HomeworkPage() {
     setLoading(true);
 
     const body = new FormData();
-    body.append('date', formData.date);
-    body.append('subject', formData.subject);
-    body.append('group_name', formData.group_name);
-    body.append('content', formData.content);
+    body.append('date', date);
+    body.append('group_name', group_name);
+    body.append('tasks', JSON.stringify(tasks));
     if (image) body.append('image', image);
 
     try {
@@ -49,30 +50,58 @@ export default function HomeworkPage() {
       <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">
         <h2 className="text-xl font-bold mb-4">Yangi vazifa kiritish</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Guruh nomi</label>
-              <input required className="w-full border p-2 rounded" placeholder="Masalan: IG2-26" value={formData.group_name} onChange={e => setFormData({...formData, group_name: e.target.value})} />
+              <input required className="w-full border p-2 rounded" placeholder="Masalan: IG2-26" value={group_name} onChange={e => setGroupName(e.target.value)} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Fan</label>
-              <input required className="w-full border p-2 rounded" placeholder="Masalan: Matematika" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} />
+              <label className="block text-sm font-medium mb-1">Qaysi kunga (Sana va hafta kuni)</label>
+              <input type="date" required className="w-full border p-2 rounded" value={date} onChange={e => setDate(e.target.value)} />
+              {date && <p className="text-xs text-gray-500 mt-1">Tanlangan kun: {new Date(date).toLocaleDateString('uz-UZ', {weekday: 'long', day: 'numeric', month: 'long'})}</p>}
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Qaysi kunga (Sana va hafta kuni)</label>
-            <input type="date" required className="w-full border p-2 rounded" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
-            {formData.date && <p className="text-xs text-gray-500 mt-1">Tanlangan kun: {new Date(formData.date).toLocaleDateString('uz-UZ', {weekday: 'long', day: 'numeric', month: 'long'})}</p>}
+          
+          <div className="mt-4 border-t pt-4">
+            <h3 className="font-bold text-lg mb-4">Fanlar va vazifalar:</h3>
+            {tasks.map((task, index) => (
+              <div key={index} className="bg-gray-50 p-4 rounded border mb-4 relative">
+                {tasks.length > 1 && (
+                  <button type="button" onClick={() => {
+                    const newTasks = [...tasks];
+                    newTasks.splice(index, 1);
+                    setTasks(newTasks);
+                  }} className="absolute top-2 right-2 text-red-500 text-sm font-bold">O'chirish</button>
+                )}
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1">Fan nomi</label>
+                  <input required className="w-full border p-2 rounded" placeholder="Masalan: Matematika" value={task.subject} onChange={e => {
+                    const newTasks = [...tasks];
+                    newTasks[index].subject = e.target.value;
+                    setTasks(newTasks);
+                  }} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Vazifa matni</label>
+                  <textarea required rows={3} className="w-full border p-2 rounded" placeholder="Uyga vazifani kiriting..." value={task.content} onChange={e => {
+                    const newTasks = [...tasks];
+                    newTasks[index].content = e.target.value;
+                    setTasks(newTasks);
+                  }}></textarea>
+                </div>
+              </div>
+            ))}
+            <button type="button" onClick={() => setTasks([...tasks, { subject: '', content: '' }])} className="text-blue-600 border border-blue-600 rounded px-4 py-2 hover:bg-blue-50">
+              + Yana boshqa fan qo'shish
+            </button>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Vazifa matni</label>
-            <textarea required rows={4} className="w-full border p-2 rounded" placeholder="Uyga vazifani kiriting..." value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})}></textarea>
-          </div>
+
           <div>
             <label className="block text-sm font-medium mb-1">Rasm (ixtiyoriy)</label>
             <input type="file" accept="image/*" onChange={e => setImage(e.target.files ? e.target.files[0] : null)} className="w-full border p-2 rounded bg-gray-50" />
           </div>
-          <p className="text-sm text-gray-500 mb-2">Bitta vazifani yuborganingizdan so'ng, forma tozalanadi va keyingisini yozishingiz mumkin bo'ladi.</p>
+          
             <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 disabled:opacity-50">
             {loading ? 'Yuborilmoqda...' : 'Saqlash va Yuborish'}
           </button>

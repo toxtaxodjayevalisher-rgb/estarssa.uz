@@ -29,7 +29,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 transition-all w-96">
+      <form onSubmit={handleLogin} className="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 transition-all w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">E-STARSSA</h1>
         {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
         <div className="mb-4">

@@ -24,17 +24,17 @@ export default function UstozStudents() {
   }, []);
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <div className="w-64 bg-[#0a1128] text-white shadow-2xl z-10 flex flex-col">
+    <div className="flex flex-col md:flex-row h-screen bg-slate-50 overflow-hidden">
+      <div className="w-full md:w-64 bg-[#0a1128] text-white shadow-2xl z-20 flex flex-col flex-shrink-0">
         <div className="p-6 text-3xl font-serif font-bold border-b border-slate-700 text-center tracking-wider text-white" style={{ textShadow: '2px 2px 4px rgba(255,255,255,0.4)' }}>E-STARSSA</div>
-        <nav className="flex-1 p-4 space-y-2">
-          <Link href="/ustoz" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Asosiy</Link>
-          <Link href="/ustoz/students" className="block px-4 py-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/30 font-bold transition-all transform hover:scale-[1.02]">O'quvchilar</Link>
-          <Link href="/ustoz/approve" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Tasdiqlash</Link>
-          <Link href="/ustoz/history" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Davomat Tarixi</Link>
+        <nav className="flex md:flex-col overflow-x-auto md:overflow-visible p-3 md:p-4 space-x-2 md:space-x-0 md:space-y-2 border-b md:border-none border-slate-800">
+          <Link href="/ustoz" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Asosiy</Link>
+          <Link href="/ustoz/students" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/30 font-bold transition-all transform hover:scale-[1.02]">O'quvchilar</Link>
+          <Link href="/ustoz/approve" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Tasdiqlash</Link>
+          <Link href="/ustoz/history" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Davomat Tarixi</Link>
         </nav>
       </div>
-      <div className="flex-1 p-8 overflow-y-auto text-black relative">
+      <div className="flex-1 p-4 md:p-8 overflow-y-auto text-black relative w-full">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">O'quvchilar ro'yxati</h1>
         </div>
@@ -43,7 +43,7 @@ export default function UstozStudents() {
           <p>Yuklanmoqda...</p>
         ) : (
           <div className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
-            <table className="min-w-full text-sm">
+            <table className="min-w-full block md:table overflow-x-auto whitespace-nowrap md:whitespace-normal text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">F.I.SH.</th>

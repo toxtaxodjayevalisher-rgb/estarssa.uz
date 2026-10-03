@@ -4,39 +4,6 @@ import AnnouncementsClient from '@/app/components/AnnouncementsClient';
 
 export default function AnnouncementsPage() {
   return (
-
-type Student = { id: string, full_name: string, group_name: string };
-type StatsData = {
-  keldi: Student[];
-  kechikdi: Student[];
-  kelmadi: Student[];
-  status: string;
-};
-
-export default function UstozDashboard() {
-  const [stats, setStats] = useState<StatsData | null>(null);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [alerts, setAlerts] = useState<any[]>([]);
-  const [selectedAlert, setSelectedAlert] = useState<any | null>(null);
-  const [violators, setViolators] = useState<any[]>([]);
-  const [selectedViolator, setSelectedViolator] = useState<any | null>(null);
-
-  useEffect(() => {
-    fetch('/api/attendance/stats').then(r => r.json()).then(data => setStats(data));
-    fetch('/api/attendance/top-violators').then(r => r.json()).then(data => setViolators(data));
-    fetch('/api/alerts').then(r => r.json()).then(data => setAlerts(data));
-  }, []);
-
-  const sendFastMsg = async (msg: string) => {
-    const res = await fetch('/api/telegram', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg })
-    });
-    if (res.ok) alert("Xabar Telegramga jo'natildi!");
-  };
-
-  return (
     <div className="flex flex-col md:flex-row h-screen bg-slate-50 overflow-hidden">
       <div className="w-full md:w-64 bg-[#0a1128] text-white shadow-2xl z-20 flex flex-col flex-shrink-0">
         <div className="p-6 text-3xl font-serif font-bold border-b border-slate-700 text-center tracking-wider text-white" style={{ textShadow: '2px 2px 4px rgba(255,255,255,0.4)' }}>E-STARSSA</div>
@@ -57,9 +24,9 @@ export default function UstozDashboard() {
       </div>
       </div>
       
-    <div className="flex-1 p-4 md:p-8 overflow-y-auto text-black relative w-full">
-      <AnnouncementsClient role="USTOZ" />
-    </div>
+      <div className="flex-1 p-8 overflow-y-auto text-black">
+        <AnnouncementsClient role="USTOZ" />
+      </div>
     </div>
   );
 }

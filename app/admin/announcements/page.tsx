@@ -4,8 +4,6 @@ import AnnouncementsClient from '@/app/components/AnnouncementsClient';
 
 export default function AnnouncementsPage() {
   return (
-
-
     <div className="flex flex-col md:flex-row h-screen bg-slate-50 overflow-hidden">
       <div className="w-full md:w-64 bg-[#0a1128] text-white shadow-2xl z-20 flex flex-col flex-shrink-0">
         <div className="p-6 text-3xl font-serif font-bold border-b border-slate-700 text-center tracking-wider text-white" style={{ textShadow: '2px 2px 4px rgba(255,255,255,0.4)' }}>E-STARSSA</div>
@@ -25,9 +23,9 @@ export default function AnnouncementsPage() {
       </div>
       </div>
       
-    <div className="flex-1 p-8 overflow-y-auto text-black">
-      <AnnouncementsClient role="ADMIN" />
-    </div>
+      <div className="flex-1 p-8 overflow-y-auto text-black">
+        <AnnouncementsClient role="ADMIN" />
+      </div>
     </div>
   );
 }

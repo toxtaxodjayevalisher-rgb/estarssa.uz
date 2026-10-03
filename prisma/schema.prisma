@@ -135,3 +135,12 @@ model Homework {
   status      String   @default("ACTIVE")
   created_at  DateTime @default(now())
 }
+
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  image_url   String?
+  created_by  String   // "Ustoz", "Admin", etc.
+  created_at  DateTime @default(now())
+}

@@ -54,18 +54,18 @@ export default function StarssaDashboard() {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <div className="w-64 bg-slate-900 text-white flex flex-col">
+      <div className="w-64 bg-[#0a1128] text-white shadow-2xl z-10 flex flex-col">
         <div className="p-6 text-3xl font-serif font-bold border-b border-slate-700 text-center tracking-wider text-white" style={{ textShadow: '2px 2px 4px rgba(255,255,255,0.4)' }}>E-STARSSA</div>
         <nav className="flex-1 p-4 space-y-2">
-          <Link href="/starssa" className="block px-4 py-2 bg-blue-600 rounded">Asosiy</Link>
-          <Link href="/starssa/students" className="block px-4 py-2 hover:bg-slate-800 rounded">O'quvchilar</Link>
-          <Link href="/starssa/attendance" className="block px-4 py-2 hover:bg-slate-800 rounded">Davomat Qilish</Link>
-          <Link href="/starssa/history" className="block px-4 py-2 hover:bg-slate-800 rounded">Davomat Tarixi</Link>
-          <Link href="/starssa/homework" className="block px-4 py-2 hover:bg-slate-800 rounded">Uyga Vazifa</Link>
+          <Link href="/starssa" className="block px-4 py-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/30 font-bold transition-all transform hover:scale-[1.02]">Asosiy</Link>
+          <Link href="/starssa/students" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">O'quvchilar</Link>
+          <Link href="/starssa/attendance" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Davomat Qilish</Link>
+          <Link href="/starssa/history" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Davomat Tarixi</Link>
+          <Link href="/starssa/homework" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Uyga Vazifa</Link>
         </nav>
         <div className="p-4 border-t border-slate-700">
           <p className="text-sm">Akkaunt: STARSSA</p>
-          <button className="mt-2 w-full bg-red-600 px-4 py-2 rounded text-white text-sm" onClick={() => {
+          <button className="mt-2 w-full bg-red-600 px-4 py-3 rounded-xl text-white font-bold active:scale-95 transition-all shadow-md shadow-red-500/30 hover:bg-red-700 text-sm" onClick={() => {
             fetch('/api/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login');
           }}>Chiqish</button>
         </div>
@@ -88,7 +88,7 @@ export default function StarssaDashboard() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-lg shadow border-l-4 border-green-500 transition">
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 border-l-4 border-green-500 transition">
                   <div className="p-6 cursor-pointer flex flex-col" onClick={() => setExpanded(prev => ({ ...prev, keldi: !prev.keldi }))}>
                     <h3 className="text-green-600 font-bold mb-2 flex justify-between items-center">
                       <span>🟢 Kelganlar</span>
@@ -106,7 +106,7 @@ export default function StarssaDashboard() {
                   )}
                 </div>
 
-                <div className="bg-white rounded-lg shadow border-l-4 border-yellow-500 transition">
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 border-l-4 border-yellow-500 transition">
                   <div className="p-6 cursor-pointer flex flex-col" onClick={() => setExpanded(prev => ({ ...prev, kechikdi: !prev.kechikdi }))}>
                     <h3 className="text-yellow-600 font-bold mb-2 flex justify-between items-center">
                       <span>🟡 Kechikkanlar</span>
@@ -124,7 +124,7 @@ export default function StarssaDashboard() {
                   )}
                 </div>
 
-                <div className="bg-white rounded-lg shadow border-l-4 border-red-500 transition">
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 border-l-4 border-red-500 transition">
                   <div className="p-6 cursor-pointer flex flex-col" onClick={() => setExpanded(prev => ({ ...prev, kelmadi: !prev.kelmadi }))}>
                     <h3 className="text-red-600 font-bold mb-2 flex justify-between items-center">
                       <span>🔴 Kelmaganlar</span>
@@ -167,7 +167,7 @@ export default function StarssaDashboard() {
         )}
 
         {stats && (stats.status !== 'Boshlanmagan' ? (
-          <div className="bg-white rounded-lg shadow p-6 mt-8 border-t-4 border-green-500">
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 p-6 mt-8 border-t-4 border-green-500">
             <h2 className="text-xl font-bold mb-2 text-green-700">🎉 Tabriklaymiz!</h2>
             <p className="text-gray-700 text-lg">Siz o'z vazifangizni 80% ni bajardingiz.</p>
             <div className="mt-6 pt-4 border-t border-gray-200">
@@ -178,16 +178,16 @@ export default function StarssaDashboard() {
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow p-6 mt-8">
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 p-6 mt-8">
             <h2 className="text-xl font-bold mb-4">Davomatni boshlash</h2>
             <p className="text-gray-600 mb-4">Bugungi kun uchun davomatni yuritib, ustozga jo'nating.</p>
-            <Link href="/starssa/attendance" className="bg-blue-600 text-white px-6 py-2 rounded inline-block">Davomat qilishni boshlash</Link>
+            <Link href="/starssa/attendance" className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold active:scale-95 transition-all shadow-lg shadow-blue-500/30 hover:bg-blue-700 inline-block">Davomat qilishni boshlash</Link>
           </div>
         ))}
 
       
         {violators.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-6 mt-8 border-t-4 border-red-500">
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 p-6 mt-8 border-t-4 border-red-500">
             <h2 className="text-xl font-bold mb-4 text-red-700">Eng ko'p qoidabuzarlik qilganlar (Oxirgi 1 oy)</h2>
             <div className="grid gap-4">
               {violators.map(v => (

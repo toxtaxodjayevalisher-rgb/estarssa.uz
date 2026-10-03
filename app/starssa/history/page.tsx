@@ -64,13 +64,13 @@ export default function StarssaHistory() {
 
   return (
     <div className="flex h-screen bg-gray-100">
-        <nav className="w-64 bg-slate-900 text-white flex flex-col p-4 space-y-2">
+        <nav className="w-64 bg-[#0a1128] text-white shadow-2xl z-10 flex flex-col p-4 space-y-2">
           <div className="p-6 text-2xl font-serif font-bold border-b border-slate-700 text-center text-white tracking-widest">E-STARSSA</div>
-          <Link href="/starssa" className="block px-4 py-2 hover:bg-slate-800 rounded">Asosiy</Link>
-          <Link href="/starssa/students" className="block px-4 py-2 hover:bg-slate-800 rounded">O'quvchilar</Link>
-          <Link href="/starssa/attendance" className="block px-4 py-2 hover:bg-slate-800 rounded">Davomat Qilish</Link>
-          <Link href="/starssa/history" className="block px-4 py-2 bg-blue-600 rounded">Davomat Tarixi</Link>
-          <Link href="/starssa/homework" className="block px-4 py-2 hover:bg-slate-800 rounded">Uyga Vazifa</Link>
+          <Link href="/starssa" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Asosiy</Link>
+          <Link href="/starssa/students" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">O'quvchilar</Link>
+          <Link href="/starssa/attendance" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Davomat Qilish</Link>
+          <Link href="/starssa/history" className="block px-4 py-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/30 font-bold transition-all transform hover:scale-[1.02]">Davomat Tarixi</Link>
+          <Link href="/starssa/homework" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Uyga Vazifa</Link>
         </nav>
       <div className="flex-1 p-8 overflow-y-auto text-black">
         <div className="flex justify-between items-center mb-6">
@@ -88,7 +88,7 @@ export default function StarssaHistory() {
             <p className="text-gray-500">Hech qanday ma'lumot topilmadi.</p>
           ) : (
             getFiltered().map(session => (
-              <div key={session.id} className="bg-white rounded-lg shadow p-6 relative">
+              <div key={session.id} className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 p-6 relative">
                 <div className="border-b pb-4 mb-4 flex justify-between">
                   <div>
                     <h2 className="text-xl font-bold">Sana: {new Date(session.date).toLocaleDateString()}</h2>

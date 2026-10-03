@@ -43,13 +43,13 @@ export default function UstozHistory() {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <div className="w-64 bg-slate-900 text-white flex flex-col">
+      <div className="w-64 bg-[#0a1128] text-white shadow-2xl z-10 flex flex-col">
         <div className="p-6 text-3xl font-serif font-bold border-b border-slate-700 text-center tracking-wider text-white" style={{ textShadow: '2px 2px 4px rgba(255,255,255,0.4)' }}>E-STARSSA</div>
         <nav className="flex-1 p-4 space-y-2">
-          <Link href="/ustoz" className="block px-4 py-2 hover:bg-slate-800 rounded">Asosiy</Link>
-          <Link href="/ustoz/students" className="block px-4 py-2 hover:bg-slate-800 rounded">O'quvchilar</Link>
-          <Link href="/ustoz/approve" className="block px-4 py-2 hover:bg-slate-800 rounded">Tasdiqlash</Link>
-          <Link href="/ustoz/history" className="block px-4 py-2 bg-blue-600 rounded">Davomat Tarixi</Link>
+          <Link href="/ustoz" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Asosiy</Link>
+          <Link href="/ustoz/students" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">O'quvchilar</Link>
+          <Link href="/ustoz/approve" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Tasdiqlash</Link>
+          <Link href="/ustoz/history" className="block px-4 py-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/30 font-bold transition-all transform hover:scale-[1.02]">Davomat Tarixi</Link>
         </nav>
       </div>
       <div className="flex-1 p-8 overflow-y-auto text-black">
@@ -68,7 +68,7 @@ export default function UstozHistory() {
             <p className="text-gray-500">Hech qanday ma'lumot topilmadi.</p>
           ) : (
             getFiltered().map(session => (
-              <div key={session.id} className="bg-white rounded-lg shadow p-6">
+              <div key={session.id} className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 p-6">
                 <div className="border-b pb-4 mb-4">
                   <h2 className="text-xl font-bold">Sana: {new Date(session.date).toLocaleDateString()}</h2>
                   <p className="text-gray-600">Guruh: {session.group_name}</p>

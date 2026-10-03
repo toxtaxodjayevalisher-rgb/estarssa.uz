@@ -29,18 +29,18 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded shadow-md w-96">
+      <form onSubmit={handleLogin} className="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 transition-all w-96">
         <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">E-STARSSA</h1>
         {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
         <div className="mb-4">
           <label className="block text-gray-700">Login</label>
-          <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full border p-2 rounded mt-1 text-black" required />
+          <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all mt-1 text-black" required />
         </div>
         <div className="mb-6">
           <label className="block text-gray-700">Parol</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border p-2 rounded mt-1 text-black" required />
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all mt-1 text-black" required />
         </div>
-        <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 flex justify-center items-center disabled:opacity-75">
+        <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white p-3 rounded-xl font-bold hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-500/30 flex justify-center items-center disabled:opacity-75">
           {loading ? (
             <>
               <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

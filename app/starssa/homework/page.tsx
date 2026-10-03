@@ -45,18 +45,18 @@ export default function HomeworkPage() {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <div className="w-64 bg-slate-900 text-white flex flex-col">
+      <div className="w-64 bg-[#0a1128] text-white shadow-2xl z-10 flex flex-col">
         <div className="p-6 text-3xl font-serif font-bold border-b border-slate-700 text-center tracking-wider text-white" style={{ textShadow: '2px 2px 4px rgba(255,255,255,0.4)' }}>E-STARSSA</div>
         <nav className="flex-1 p-4 space-y-2">
-          <a href="/starssa" className="block px-4 py-2 hover:bg-slate-800 rounded">Asosiy</a>
-          <a href="/starssa/students" className="block px-4 py-2 hover:bg-slate-800 rounded">O'quvchilar</a>
-          <a href="/starssa/attendance" className="block px-4 py-2 hover:bg-slate-800 rounded">Davomat Qilish</a>
-          <a href="/starssa/history" className="block px-4 py-2 hover:bg-slate-800 rounded">Davomat Tarixi</a>
-          <a href="/starssa/homework" className="block px-4 py-2 bg-blue-600 rounded">Uyga Vazifa</a>
+          <a href="/starssa" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Asosiy</a>
+          <a href="/starssa/students" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">O'quvchilar</a>
+          <a href="/starssa/attendance" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Davomat Qilish</a>
+          <a href="/starssa/history" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Davomat Tarixi</a>
+          <a href="/starssa/homework" className="block px-4 py-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/30 font-bold transition-all transform hover:scale-[1.02]">Uyga Vazifa</a>
         </nav>
         <div className="p-4 border-t border-slate-700">
           <p className="text-sm">Akkaunt: STARSSA</p>
-          <button className="mt-2 w-full bg-red-600 px-4 py-2 rounded text-white text-sm" onClick={() => {
+          <button className="mt-2 w-full bg-red-600 px-4 py-3 rounded-xl text-white font-bold active:scale-95 transition-all shadow-md shadow-red-500/30 hover:bg-red-700 text-sm" onClick={() => {
             fetch('/api/auth/logout', { method: 'POST' }).then(() => window.location.href = '/login');
           }}>Chiqish</button>
         </div>
@@ -66,18 +66,18 @@ export default function HomeworkPage() {
       
       <h1 className="text-2xl font-bold">Uyga vazifalar</h1>
       
-      <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">
+      <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl border-t-4 border-blue-500">
         <h2 className="text-xl font-bold mb-4">Yangi vazifa kiritish</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Guruh nomi</label>
-              <input required className="w-full border p-2 rounded" placeholder="Masalan: IG2-26" value={group_name} onChange={e => setGroupName(e.target.value)} />
+              <input required className="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all" placeholder="Masalan: IG2-26" value={group_name} onChange={e => setGroupName(e.target.value)} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Qaysi kunga (Sana va hafta kuni)</label>
-              <input type="date" required className="w-full border p-2 rounded" value={date} onChange={e => setDate(e.target.value)} />
+              <input type="date" required className="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all" value={date} onChange={e => setDate(e.target.value)} />
               {date && <p className="text-xs text-gray-500 mt-1">Tanlangan kun: {new Date(date).toLocaleDateString('uz-UZ', {weekday: 'long', day: 'numeric', month: 'long'})}</p>}
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function HomeworkPage() {
                 )}
                 <div className="mb-3">
                   <label className="block text-sm font-medium mb-1">Fan nomi</label>
-                  <input required className="w-full border p-2 rounded" placeholder="Masalan: Matematika" value={task.subject} onChange={e => {
+                  <input required className="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all" placeholder="Masalan: Matematika" value={task.subject} onChange={e => {
                     const newTasks = [...tasks];
                     newTasks[index].subject = e.target.value;
                     setTasks(newTasks);
@@ -103,7 +103,7 @@ export default function HomeworkPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Vazifa matni</label>
-                  <textarea required rows={3} className="w-full border p-2 rounded" placeholder="Uyga vazifani kiriting..." value={task.content} onChange={e => {
+                  <textarea required rows={3} className="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all" placeholder="Uyga vazifani kiriting..." value={task.content} onChange={e => {
                     const newTasks = [...tasks];
                     newTasks[index].content = e.target.value;
                     setTasks(newTasks);
@@ -118,16 +118,16 @@ export default function HomeworkPage() {
 
           <div>
             <label className="block text-sm font-medium mb-1">Rasm (ixtiyoriy)</label>
-            <input type="file" accept="image/*" onChange={e => setImage(e.target.files ? e.target.files[0] : null)} className="w-full border p-2 rounded bg-gray-50" />
+            <input type="file" accept="image/*" onChange={e => setImage(e.target.files ? e.target.files[0] : null)} className="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50" />
           </div>
           
-            <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 disabled:opacity-50">
+            <button type="submit" disabled={loading} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold active:scale-95 transition-all shadow-lg shadow-blue-500/30 hover:bg-blue-700 font-bold hover:bg-blue-700 disabled:opacity-50">
             {loading ? 'Yuborilmoqda...' : 'Saqlash va Yuborish'}
           </button>
         </form>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow-md mt-8">
+      <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl mt-8">
         <h2 className="text-xl font-bold mb-4">Faol vazifalar</h2>
         <div className="grid gap-4">
           {homeworks.length === 0 ? (

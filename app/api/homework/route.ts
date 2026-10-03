@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/auth';
 import { sendTelegramMessage } from '@/lib/telegram';
-import fs from 'fs';
-import path from 'path';
 
 export async function GET(req: Request) {
   const auth = await verifyAuth();

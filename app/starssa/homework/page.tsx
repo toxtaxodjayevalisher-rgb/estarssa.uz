@@ -62,6 +62,7 @@ export default function HomeworkPage() {
           <div>
             <label className="block text-sm font-medium mb-1">Qaysi kunga (muddat)</label>
             <input type="date" required className="w-full border p-2 rounded" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+            {formData.date && <p className="text-xs text-gray-500 mt-1">Tanlangan kun: {new Date(formData.date).toLocaleDateString('uz-UZ', {weekday: 'long', day: 'numeric', month: 'long'})}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Vazifa matni</label>

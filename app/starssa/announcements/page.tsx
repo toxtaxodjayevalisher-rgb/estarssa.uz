@@ -4,9 +4,6 @@ import AnnouncementsClient from '@/app/components/AnnouncementsClient';
 
 export default function AnnouncementsPage() {
   return (
-    "use client";
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
 
 type Student = { id: string, full_name: string, group_name: string };
 type StatsData = {

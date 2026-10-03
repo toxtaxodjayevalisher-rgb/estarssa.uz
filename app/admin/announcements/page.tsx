@@ -4,8 +4,6 @@ import AnnouncementsClient from '@/app/components/AnnouncementsClient';
 
 export default function AnnouncementsPage() {
   return (
-    "use client";
-import Link from 'next/link';
 
 
     <div className="flex flex-col md:flex-row h-screen bg-slate-50 overflow-hidden">

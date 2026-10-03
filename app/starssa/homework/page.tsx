@@ -60,7 +60,7 @@ export default function HomeworkPage() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Qaysi kunga (muddat)</label>
+            <label className="block text-sm font-medium mb-1">Qaysi kunga (Sana va hafta kuni)</label>
             <input type="date" required className="w-full border p-2 rounded" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
             {formData.date && <p className="text-xs text-gray-500 mt-1">Tanlangan kun: {new Date(formData.date).toLocaleDateString('uz-UZ', {weekday: 'long', day: 'numeric', month: 'long'})}</p>}
           </div>
@@ -72,7 +72,8 @@ export default function HomeworkPage() {
             <label className="block text-sm font-medium mb-1">Rasm (ixtiyoriy)</label>
             <input type="file" accept="image/*" onChange={e => setImage(e.target.files ? e.target.files[0] : null)} className="w-full border p-2 rounded bg-gray-50" />
           </div>
-          <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 disabled:opacity-50">
+          <p className="text-sm text-gray-500 mb-2">Bitta vazifani yuborganingizdan so'ng, forma tozalanadi va keyingisini yozishingiz mumkin bo'ladi.</p>
+            <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 disabled:opacity-50">
             {loading ? 'Yuborilmoqda...' : 'Saqlash va Yuborish'}
           </button>
         </form>

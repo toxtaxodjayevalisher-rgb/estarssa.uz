@@ -152,7 +152,8 @@ export default function HomeworkPage() {
             ))
           )}
         </div>
-      </div>
+            </div>
+    </div>
     </div>
   );
 }

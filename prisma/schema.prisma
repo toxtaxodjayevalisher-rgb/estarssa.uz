@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id @default(uuid())
+  username         String   @unique
+  password_hash    String
+  role             String
+  telegram_id      String?
+  full_name        String
+  status           String   @default("ACTIVE")
+  created_at       DateTime @default(now())
+  
+  created_sessions AttendanceSession[] @relation("SessionCreator")
+  approved_sessions AttendanceSession[] @relation("SessionApprover")
+  
+  sent_messages    TelegramMessage[] @relation("MessageSender")
+  received_messages TelegramMessage[] @relation("MessageRecipient")
+  
+  received_notifications NotificationLog[] @relation("NotificationRecipient")
+}
+
+model Student {
+  id               String   @id @default(uuid())
+  full_name        String
+  group_name       String
+  phone            String?
+  birth_date       DateTime?
+  gender           String?
+  status           String   @default("ACTIVE")
+  created_at       DateTime @default(now())
+
+  attendances      Attendance[]
+  applications     Application[]
+  notifications    NotificationLog[]
+}
+
+model AttendanceSession {
+  id               String   @id @default(uuid())
+  date             DateTime
+  group_name       String
+  status           String   @default("DRAFT")
+  
+  created_by_id    String
+  created_by       User     @relation("SessionCreator", fields: [created_by_id], references: [id])
+  
+  approved_by_id   String?
+  approved_by      User?    @relation("SessionApprover", fields: [approved_by_id], references: [id])
+  
+  submitted_at     DateTime?
+  approved_at      DateTime?
+
+  records          Attendance[]
+  archive          AttendanceArchive?
+
+  @@unique([date, group_name])
+}
+
+model Attendance {
+  id               String   @id @default(uuid())
+  student_id       String
+  student          Student  @relation(fields: [student_id], references: [id])
+  
+  session_id       String
+  session          AttendanceSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  
+  date             DateTime
+  status           String
+  note             String?
+  
+  created_at       DateTime @default(now())
+}
+
+model AttendanceArchive {
+  id                    String   @id @default(uuid())
+  attendance_session_id String   @unique
+  session               AttendanceSession @relation(fields: [attendance_session_id], references: [id])
+  archived_at           DateTime @default(now())
+}
+
+model Application {
+  id               String   @id @default(uuid())
+  student_id       String
+  student          Student  @relation(fields: [student_id], references: [id])
+  reason           String?
+  missed_count     Int      @default(3)
+  status           String   @default("YANGI")
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+}
+
+model TelegramMessage {
+  id               String   @id @default(uuid())
+  sender_id        String?
+  sender           User?    @relation("MessageSender", fields: [sender_id], references: [id])
+  
+  recipient_id     String?
+  recipient        User?    @relation("MessageRecipient", fields: [recipient_id], references: [id])
+  
+  telegram_id      String
+  message          String
+  message_type     String
+  status           String   @default("SENT")
+  sent_at          DateTime @default(now())
+}
+
+model NotificationLog {
+  id               String   @id @default(uuid())
+  type             String
+  
+  student_id       String?
+  student          Student? @relation(fields: [student_id], references: [id])
+  
+  recipient_id     String
+  recipient        User     @relation("NotificationRecipient", fields: [recipient_id], references: [id])
+  
+  date             DateTime
+  sent_at          DateTime @default(now())
+}
+
+model Homework {
+  id          String   @id @default(uuid())
+  date        DateTime
+  subject     String   @default("")
+  content     String
+  image_url   String?
+  group_name  String
+  created_by  String
+  status      String   @default("ACTIVE")
+  created_at  DateTime @default(now())
+}

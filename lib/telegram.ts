@@ -1,0 +1,29 @@
+const token = process.env.TELEGRAM_BOT_TOKEN || '8983797302:AAHrMF0yZQ0qOgRGgE96SL6nV5hMKPdD_p4';
+
+const CHAT_IDS = ['1973751873', '-5459131960'];
+
+export async function sendTelegramMessage(text: string) {
+  for (const chatId of CHAT_IDS) {
+    try {
+      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: text,
+          parse_mode: 'HTML'
+        })
+      });
+      
+      if (!response.ok) {
+        const err = await response.text();
+        console.error(`Xabar yuborishda xato (${chatId}):`, err);
+      } else {
+        console.log(`Xabar yuborildi: ${chatId}`);
+      }
+    } catch (error) {
+      console.error(`Xabar yuborishda xato (${chatId}):`, error);
+    }
+  }
+}

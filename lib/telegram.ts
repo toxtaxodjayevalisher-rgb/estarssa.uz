@@ -27,3 +27,28 @@ export async function sendTelegramMessage(text: string) {
     }
   }
 }
+
+
+export async function sendTelegramPhoto(caption: string, photoFile: File) {
+  for (const chatId of CHAT_IDS) {
+    try {
+      const url = `https://api.telegram.org/bot${token}/sendPhoto`;
+      const formData = new FormData();
+      formData.append('chat_id', chatId);
+      formData.append('caption', caption);
+      formData.append('parse_mode', 'HTML');
+      formData.append('photo', photoFile);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        console.error('Rasm yuborishda xato:', await response.text());
+      }
+    } catch (error) {
+      console.error('Rasm yuborish xatosi:', error);
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/auth';
-import { sendTelegramMessage } from '@/lib/telegram';
+import { sendTelegramMessage, sendTelegramPhoto } from '@/lib/telegram';
 
 export async function GET(req: Request) {
   const auth = await verifyAuth();
@@ -82,7 +82,11 @@ export async function POST(req: Request) {
     }
     tgMsg += `\n👤 Kiritdi: ${auth.username}`;
 
-    await sendTelegramMessage(tgMsg);
+    if (image) {
+      await sendTelegramPhoto(tgMsg, image);
+    } else {
+      await sendTelegramMessage(tgMsg);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

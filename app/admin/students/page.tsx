@@ -35,7 +35,9 @@ export default function AdminStudents() {
   return (
     <div className="flex h-screen bg-gray-100">
       <div className="w-64 bg-slate-900 text-white flex flex-col">
-        <div className="p-6 text-2xl font-bold border-b border-slate-700 text-center">E-STARSSA</div>
+        <div className="p-6 flex justify-center items-center border-b border-slate-700">
+          <img src="/icon.png" alt="E-STARSSA" className="h-16 object-contain" />
+        </div>
         <nav className="flex-1 p-4 space-y-2">
           <Link href="/admin" className="block px-4 py-2 hover:bg-slate-800 rounded">Asosiy</Link>
           <Link href="/admin/students" className="block px-4 py-2 bg-blue-600 rounded">O'quvchilar</Link>

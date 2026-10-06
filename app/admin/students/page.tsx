@@ -179,7 +179,7 @@ export default function AdminStudents() {
                     <tbody className="divide-y divide-gray-200">
                       {groups.map(g => (
                         <tr key={g.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 font-semibold text-lg">{g.name}</td>
+                          <td className="px-6 py-4 font-semibold text-lg"><Link href={`/admin/groups/${g.id}`} className="text-blue-600 hover:underline">{g.name}</Link></td>
                           <td className="px-6 py-4 text-right space-x-3">
                             <button onClick={() => { setEditingGroupId(g.id); setGroupForm({ name: g.name }); setShowGroupForm(true); }} className="text-blue-600 hover:text-blue-800 font-medium">Tahrirlash</button>
                             <button onClick={() => deleteGroup(g.id)} className="text-red-600 hover:text-red-800 font-medium">O'chirish</button>

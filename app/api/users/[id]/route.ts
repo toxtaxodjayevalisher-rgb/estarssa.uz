@@ -11,10 +11,28 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const auth = await verifyAuth((await cookies()).get('token')?.value);
     if (!auth || auth.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { username, password, role, full_name, status } = await req.json();
+    const { username, password, role, full_name, status, phone, birth_date, assigned_group } = await req.json();
     const { id } = await params;
     
-    let updateData: any = { username, role, full_name, status };
+    // Check limit
+    if (role === 'STARSSA' && assigned_group) {
+      const existingStarssas = await prisma.user.count({
+        where: { role: 'STARSSA', assigned_group, id: { not: id } }
+      });
+      if (existingStarssas >= 2) {
+        return NextResponse.json({ error: 'Bitta guruhda uzog`i 2 ta Starssa bo`lishi mumkin!' }, { status: 400 });
+      }
+    }
+
+    let updateData: any = { 
+      username, 
+      role, 
+      full_name, 
+      status,
+      phone,
+      birth_date: birth_date ? new Date(birth_date) : null,
+      assigned_group 
+    };
     if (password) {
       updateData.password_hash = await bcrypt.hash(password, 10);
     }
@@ -22,7 +40,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const user = await prisma.user.update({
       where: { id },
       data: updateData,
-      select: { id: true, username: true, role: true, full_name: true, status: true }
+      select: { id: true, username: true, role: true, full_name: true, status: true, phone: true, assigned_group: true }
     });
     return NextResponse.json(user);
   } catch (error: any) {
@@ -37,12 +55,11 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     if (!auth || auth.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { id } = await params;
-    // Don't allow admin to delete themselves
     if (id === auth.userId) return NextResponse.json({ error: 'O`z akkauntingizni o`chira olmaysiz' }, { status: 400 });
 
     await prisma.user.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: 'Foydalanuvchiga bog`langan ma`lumotlar (davomat/vazifalar) bo`lishi mumkin' }, { status: 400 });
+    return NextResponse.json({ error: 'Foydalanuvchiga bog`langan ma`lumotlar bo`lishi mumkin' }, { status: 400 });
   }
 }

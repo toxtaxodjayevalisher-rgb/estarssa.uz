@@ -7,6 +7,7 @@ type Group = { id: string, name: string };
 
 export default function AdminStudents() {
   const [students, setStudents] = useState<Student[]>([]);
+  const [filterGroup, setFilterGroup] = useState<string>('');
   const [groups, setGroups] = useState<Group[]>([]);
   
   const [showStudentForm, setShowStudentForm] = useState(false);
@@ -140,7 +141,7 @@ export default function AdminStudents() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {students.map(s => (
+                      {students.filter(s => filterGroup ? s.group_name === filterGroup : true).map(s => (
                         <tr key={s.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 font-semibold">{s.full_name}</td>
                           <td className="px-6 py-4">
@@ -154,7 +155,7 @@ export default function AdminStudents() {
                           </td>
                         </tr>
                       ))}
-                      {students.length === 0 && (<tr><td colSpan={5} className="px-6 py-4 text-center text-gray-500">O'quvchilar yo'q</td></tr>)}
+                      {students.filter(s => filterGroup ? s.group_name === filterGroup : true).length === 0 && (<tr><td colSpan={5} className="px-6 py-4 text-center text-gray-500">O'quvchilar yo'q</td></tr>)}
                     </tbody>
                   </table>
                 </div>

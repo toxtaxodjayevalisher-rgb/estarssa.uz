@@ -411,7 +411,36 @@ export default function AdminUsers() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Biriktirilgan guruh</label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-semibold text-gray-700">Biriktirilgan guruh</label>
+                      <button 
+                        type="button" 
+                        onClick={async () => {
+                          const gName = prompt("Yangi guruh nomini kiriting (masalan: Frontend 01):");
+                          if (!gName || gName.trim() === '') return;
+                          try {
+                            const res = await fetch('/api/groups', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ name: gName.trim() })
+                            });
+                            if (res.ok) {
+                              const newG = await res.json();
+                              setGroups([...groups, newG]);
+                              setFormData({...formData, assigned_group: newG.name});
+                            } else {
+                              const err = await res.json();
+                              alert(err.error || "Guruh yaratishda xatolik");
+                            }
+                          } catch (e) {
+                            alert("Xatolik yuz berdi");
+                          }
+                        }}
+                        className="text-xs text-blue-600 font-bold hover:text-blue-800 transition-colors"
+                      >
+                        + Yangi guruh ochish
+                      </button>
+                    </div>
                     <select 
                       className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white" 
                       value={formData.assigned_group} 

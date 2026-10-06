@@ -87,7 +87,8 @@ export default function StarssaStudents() {
 <table className="min-w-full text-sm whitespace-nowrap md:whitespace-normal">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">F.I.SH.</th>
+                  <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase w-16">#</th>
+                          <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">F.I.SH.</th>
                   <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Guruh</th>
                   <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Tug'ilgan sana</th>
                   <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Telefon</th>
@@ -120,7 +121,7 @@ export default function StarssaStudents() {
                     </tr>
                   )
                 })}
-                {students.length === 0 && <tr><td colSpan={8} className="px-6 py-4 text-center text-gray-500">O'quvchilar yo'q</td></tr>}
+                {students.length === 0 && <tr><td colSpan={9} className="px-6 py-4 text-center text-gray-500">O'quvchilar yo'q</td></tr>}
               </tbody>
             </table>
 </div>

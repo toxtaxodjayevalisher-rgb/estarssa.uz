@@ -135,7 +135,8 @@ export default function AdminStudents() {
 <table className="min-w-full text-sm whitespace-nowrap md:whitespace-normal">
                     <thead className="bg-gray-50 border-b">
                       <tr>
-                        <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">F.I.SH.</th>
+                        <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase w-16">#</th>
+                          <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">F.I.SH.</th>
                         <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Guruh</th>
                         <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Tug'ilgan sana</th>
                         <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Telefon</th>
@@ -143,9 +144,10 @@ export default function AdminStudents() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {students.filter(s => filterGroup ? s.group_name === filterGroup : true).map(s => (
+                      {students.filter(s => filterGroup ? s.group_name === filterGroup : true).map((s, idx) => (
                         <tr key={s.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 font-semibold">{s.full_name}</td>
+                          <td className="px-6 py-4 text-gray-500 font-bold">{idx + 1}</td>
+                            <td className="px-6 py-4 font-semibold">{s.full_name}</td>
                           <td className="px-6 py-4">
                             <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full font-semibold">{s.group_name}</span>
                           </td>
@@ -157,7 +159,7 @@ export default function AdminStudents() {
                           </td>
                         </tr>
                       ))}
-                      {students.filter(s => filterGroup ? s.group_name === filterGroup : true).length === 0 && (<tr><td colSpan={5} className="px-6 py-4 text-center text-gray-500">O'quvchilar yo'q</td></tr>)}
+                      {students.filter(s => filterGroup ? s.group_name === filterGroup : true).length === 0 && (<tr><td colSpan={6} className="px-6 py-4 text-center text-gray-500">O'quvchilar yo'q</td></tr>)}
                     </tbody>
                   </table>
 </div>

@@ -34,13 +34,13 @@ export async function POST(req: Request) {
     }
 
     let imageUrl = null;
-    let caption = \`📢 E'LON: \${title}\\n\\n\${content}\\n\\n✍️ Yuboruvchi: \${auth.role}\`;
+    let caption = `📢 E'LON: ${title}\\n\\n${content}\\n\\n✍️ Yuboruvchi: ${auth.role}`;
     let msgIds: any = [];
 
     if (image && image.size > 0) {
       const bytes = await image.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const base64 = \`data:\${image.type};base64,\${buffer.toString('base64')}\`;
+      const base64 = `data:${image.type};base64,${buffer.toString('base64')}`;
       imageUrl = base64;
       msgIds = await sendTelegramPhoto(caption, image);
     } else {

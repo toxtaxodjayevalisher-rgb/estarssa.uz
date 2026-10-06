@@ -6,7 +6,7 @@ export async function sendTelegramMessage(text: string) {
   let messageIds = [];
   for (const chatId of CHAT_IDS) {
     try {
-      const url = \`https://api.telegram.org/bot\${token}/sendMessage\`;
+      const url = `https://api.telegram.org/bot${token}/sendMessage`;
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -18,13 +18,13 @@ export async function sendTelegramMessage(text: string) {
       });
       
       if (!response.ok) {
-        console.error(\`Xabar yuborishda xato (\${chatId}):\`, await response.text());
+        console.error(`Xabar yuborishda xato (${chatId}):`, await response.text());
       } else {
         const data = await response.json();
         messageIds.push({ chatId, messageId: data.result.message_id });
       }
     } catch (error) {
-      console.error(\`Xabar yuborishda xato (\${chatId}):\`, error);
+      console.error(`Xabar yuborishda xato (${chatId}):`, error);
     }
   }
   return messageIds;
@@ -34,7 +34,7 @@ export async function sendTelegramPhoto(caption: string, photoFile: File) {
   let messageIds = [];
   for (const chatId of CHAT_IDS) {
     try {
-      const url = \`https://api.telegram.org/bot\${token}/sendPhoto\`;
+      const url = `https://api.telegram.org/bot${token}/sendPhoto`;
       const formData = new FormData();
       formData.append('chat_id', chatId);
       formData.append('caption', caption);
@@ -61,7 +61,7 @@ export async function sendTelegramPhoto(caption: string, photoFile: File) {
 
 export async function deleteTelegramMessage(chatId: string, messageId: number) {
   try {
-    const url = \`https://api.telegram.org/bot\${token}/deleteMessage\`;
+    const url = `https://api.telegram.org/bot${token}/deleteMessage`;
     await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

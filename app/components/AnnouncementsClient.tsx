@@ -68,7 +68,7 @@ export default function AnnouncementsClient({ role }: { role: string }) {
     if (!confirm("Rostdan ham ushbu e'lonni o'chirmoqchimisiz? Bu amal Telegram guruhidan ham xabarni o'chirib tashlaydi!")) return;
     
     try {
-      const res = await fetch(\`/api/announcements/\${id}\`, { method: 'DELETE' });
+      const res = await fetch(`/api/announcements/${id}`, { method: 'DELETE' });
       if (res.ok) {
         fetchAnnouncements();
       } else {

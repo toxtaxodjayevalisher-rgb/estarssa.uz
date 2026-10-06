@@ -26,13 +26,13 @@ export default function AdminAttendance() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Rostdan ham bu davomatni bekor qilib (o'chirib) yubormoqchimisiz?")) return;
-    const res = await fetch(\`/api/admin/attendance/\${id}\`, { method: 'DELETE' });
+    const res = await fetch(`/api/admin/attendance/${id}`, { method: 'DELETE' });
     if (res.ok) fetchData();
   };
 
   const handleReturn = async (id: string) => {
     if (!confirm("Davomatni Ustozga qaytadan qilish uchun yubormoqchimisiz?")) return;
-    const res = await fetch(\`/api/admin/attendance/\${id}\`, { method: 'PUT' });
+    const res = await fetch(`/api/admin/attendance/${id}`, { method: 'PUT' });
     if (res.ok) fetchData();
   };
 

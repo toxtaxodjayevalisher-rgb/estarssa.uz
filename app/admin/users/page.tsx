@@ -2,25 +2,81 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
-type User = { id: string, username: string, role: string, full_name: string, status: string, created_at: string, assigned_group?: string };
+type User = { 
+  id: string; 
+  username: string; 
+  role: string; 
+  full_name: string; 
+  status: string; 
+  created_at: string; 
+  assigned_group?: string | null;
+  phone?: string | null;
+  birth_date?: string | null;
+};
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ username: '', password: '', role: 'STARSSA', full_name: '', status: 'ACTIVE', assigned_group: '' });
+  const [formData, setFormData] = useState({ 
+    username: '', 
+    password: '', 
+    role: 'STARSSA', 
+    full_name: '', 
+    status: 'ACTIVE', 
+    assigned_group: '',
+    phone: '',
+    birth_date: ''
+  });
   const [loading, setLoading] = useState(true);
+  const [filterRole, setFilterRole] = useState('');
+  const [filterGroup, setFilterGroup] = useState('');
 
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
-    const [uRes, gRes] = await Promise.all([fetch('/api/users'), fetch('/api/groups')]);
-    if (uRes.ok) setUsers(await uRes.json());
-    if (gRes.ok) setGroups(await gRes.json());
-    setLoading(false);
+    try {
+      const [uRes, gRes] = await Promise.all([fetch('/api/users'), fetch('/api/groups')]);
+      if (uRes.ok) setUsers(await uRes.json());
+      if (gRes.ok) setGroups(await gRes.json());
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenCreate = () => {
+    setEditingId(null);
+    setFormData({ 
+      username: '', 
+      password: '', 
+      role: 'STARSSA', 
+      full_name: '', 
+      status: 'ACTIVE', 
+      assigned_group: '',
+      phone: '',
+      birth_date: ''
+    });
+    setShowForm(true);
+  };
+
+  const handleOpenEdit = (u: User) => {
+    setEditingId(u.id);
+    setFormData({ 
+      username: u.username, 
+      password: '', 
+      role: u.role, 
+      full_name: u.full_name, 
+      status: u.status, 
+      assigned_group: u.assigned_group || '',
+      phone: u.phone || '',
+      birth_date: u.birth_date ? u.birth_date.split('T')[0] : ''
+    });
+    setShowForm(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,50 +87,63 @@ export default function AdminUsers() {
     const dataToSend: any = { ...formData };
     if (editingId && !dataToSend.password) delete dataToSend.password;
     if (!dataToSend.assigned_group) dataToSend.assigned_group = null;
+    if (!dataToSend.phone) dataToSend.phone = null;
+    if (!dataToSend.birth_date) dataToSend.birth_date = null;
     
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dataToSend)
-    });
-    
-    if (res.ok) {
-      await fetchData();
-      setShowForm(false);
-      setEditingId(null);
-      setFormData({ username: '', password: '', role: 'STARSSA', full_name: '', status: 'ACTIVE', assigned_group: '' });
-    } else {
-      const err = await res.json();
-      alert(err.error || "Xatolik yuz berdi");
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToSend)
+      });
+      
+      if (res.ok) {
+        await fetchData();
+        setShowForm(false);
+        setEditingId(null);
+      } else {
+        const err = await res.json();
+        alert(err.error || "Xatolik yuz berdi");
+      }
+    } catch (err) {
+      alert("Server bilan aloqa xatosi");
     }
   };
 
-  const deleteUser = async (id: string) => {
-    if (!confirm("Haqiqatan ham o'chirmoqchimisiz?")) return;
-    const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-    if (res.ok) fetchData();
-    else {
-      const err = await res.json();
-      alert(err.error || "Xatolik");
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Haqiqatan ham "${name}" akkauntini o'chirmoqchimisiz?`)) return;
+    try {
+      const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchData();
+      } else {
+        const err = await res.json();
+        alert(err.error || "O'chirishda xatolik");
+      }
+    } catch (err) {
+      alert("Xatolik yuz berdi");
     }
   };
 
-  const getRoleLabel = (role: string) => {
-    if (role === 'ADMIN') return 'Admin';
-    if (role === 'USTOZ') return 'Ustoz';
-    return 'Starssa';
+  const getRoleBadge = (role: string) => {
+    if (role === 'ADMIN') return <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Admin</span>;
+    if (role === 'USTOZ') return <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">Ustoz</span>;
+    return <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">Starssa</span>;
   };
 
-  const openEdit = (u: User) => {
-    setEditingId(u.id);
-    setFormData({ username: u.username, password: '', role: u.role, full_name: u.full_name, status: u.status, assigned_group: u.assigned_group || '' });
-    setShowForm(true);
-  };
+  const filteredUsers = users.filter(u => {
+    if (filterRole && u.role !== filterRole) return false;
+    if (filterGroup && u.assigned_group !== filterGroup) return false;
+    return true;
+  });
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-slate-50 overflow-hidden">
+      {/* Sidebar */}
       <div className="w-full md:w-64 bg-[#0a1128] text-white shadow-2xl z-20 flex flex-col flex-shrink-0">
-        <div className="p-6 text-3xl font-serif font-bold border-b border-slate-700 text-center tracking-wider text-white" style={{ textShadow: '2px 2px 4px rgba(255,255,255,0.4)' }}>E-STARSSA</div>
+        <div className="p-6 text-3xl font-serif font-bold border-b border-slate-700 text-center tracking-wider text-white" style={{ textShadow: '2px 2px 4px rgba(255,255,255,0.4)' }}>
+          E-STARSSA
+        </div>
         <nav className="flex md:flex-col overflow-x-auto md:overflow-visible p-3 md:p-4 space-x-2 md:space-x-0 md:space-y-2 border-b md:border-none border-slate-800">
           <Link href="/admin" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Asosiy</Link>
           <Link href="/admin/students" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">O'quvchilar</Link>
@@ -92,103 +161,251 @@ export default function AdminUsers() {
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="flex-1 p-4 md:p-8 overflow-y-auto text-black relative w-full">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Akkauntlar</h1>
-          <button onClick={() => { setEditingId(null); setFormData({ username: '', password: '', role: 'STARSSA', full_name: '', status: 'ACTIVE', assigned_group: '' }); setShowForm(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all">+ Yangi akkaunt</button>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Akkauntlar Boshqaruvi</h1>
+            <p className="text-gray-500 text-sm mt-1">Ustoz, Starssa va Admin login/parollarini yaratish, tahrirlash va o'chirish</p>
+          </div>
+          <button 
+            onClick={handleOpenCreate} 
+            className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-2"
+          >
+            <span className="text-lg">+</span> Yangi akkaunt ochish
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-wrap gap-4 items-center">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-semibold text-gray-600">Rol:</label>
+            <select 
+              value={filterRole} 
+              onChange={e => setFilterRole(e.target.value)} 
+              className="border border-gray-300 rounded-xl px-3 py-1.5 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Barchasi</option>
+              <option value="USTOZ">Ustozlar</option>
+              <option value="STARSSA">Starssalar</option>
+              <option value="ADMIN">Adminlar</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-semibold text-gray-600">Guruh:</label>
+            <select 
+              value={filterGroup} 
+              onChange={e => setFilterGroup(e.target.value)} 
+              className="border border-gray-300 rounded-xl px-3 py-1.5 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Barcha guruhlar</option>
+              {groups.map(g => (
+                <option key={g.id} value={g.name}>{g.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="text-xs text-gray-400 ml-auto font-medium">
+            Jami: {filteredUsers.length} ta akkaunt
+          </div>
         </div>
         
-        {loading ? <p>Yuklanmoqda...</p> : (
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all overflow-hidden">
+        {loading ? (
+          <div className="p-12 text-center text-gray-500 font-medium">Yuklanmoqda...</div>
+        ) : (
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
             <table className="min-w-full block md:table overflow-x-auto whitespace-nowrap md:whitespace-normal text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">F.I.SH.</th>
-                  <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Login</th>
-                  <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Rol</th>
-                  <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Guruh</th>
-                  <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Status</th>
-                  <th className="text-right px-6 py-4 font-medium text-gray-500 uppercase">Amallar</th>
+                  <th className="text-left px-6 py-4 font-semibold text-gray-600 uppercase text-xs">F.I.SH.</th>
+                  <th className="text-left px-6 py-4 font-semibold text-gray-600 uppercase text-xs">Login</th>
+                  <th className="text-left px-6 py-4 font-semibold text-gray-600 uppercase text-xs">Roli</th>
+                  <th className="text-left px-6 py-4 font-semibold text-gray-600 uppercase text-xs">Guruh</th>
+                  <th className="text-left px-6 py-4 font-semibold text-gray-600 uppercase text-xs">Telefon</th>
+                  <th className="text-left px-6 py-4 font-semibold text-gray-600 uppercase text-xs">Status</th>
+                  <th className="text-right px-6 py-4 font-semibold text-gray-600 uppercase text-xs">Amallar</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
-                {users.map(u => (
-                  <tr key={u.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-semibold">{u.full_name}</td>
-                    <td className="px-6 py-4">{u.username}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${u.role === 'ADMIN' ? 'bg-red-100 text-red-700' : u.role === 'USTOZ' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                        {getRoleLabel(u.role)}
-                      </span>
-                    </td>
+              <tbody className="divide-y divide-gray-100">
+                {filteredUsers.map(u => (
+                  <tr key={u.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-bold text-gray-800">{u.full_name}</td>
+                    <td className="px-6 py-4 font-mono text-gray-600 text-xs bg-slate-50 px-2 py-1 rounded inline-block my-3 ml-6">{u.username}</td>
+                    <td className="px-6 py-4">{getRoleBadge(u.role)}</td>
                     <td className="px-6 py-4">
                       {u.assigned_group ? (
-                        <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">{u.assigned_group}</span>
+                        <span className="px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-xs font-bold">
+                          {u.assigned_group}
+                        </span>
                       ) : (
                         <span className="text-gray-400 text-xs">—</span>
                       )}
                     </td>
+                    <td className="px-6 py-4 text-gray-600 text-xs">{u.phone || '—'}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded text-xs ${u.status === 'ACTIVE' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>{u.status === 'ACTIVE' ? 'Faol' : 'Bloklangan'}</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${u.status === 'ACTIVE' ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}>
+                        {u.status === 'ACTIVE' ? 'Faol' : 'Bloklangan'}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-right space-x-2">
-                      <button onClick={() => openEdit(u)} className="text-blue-600 hover:text-blue-800 font-medium">Tahrirlash</button>
-                      <button onClick={() => deleteUser(u.id)} className="text-red-600 hover:text-red-800 font-medium ml-2">O'chirish</button>
+                    <td className="px-6 py-4 text-right space-x-3">
+                      <button 
+                        onClick={() => handleOpenEdit(u)} 
+                        className="text-blue-600 hover:text-blue-800 font-semibold text-xs bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
+                      >
+                        Tahrirlash
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(u.id, u.full_name)} 
+                        className="text-red-600 hover:text-red-800 font-semibold text-xs bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all"
+                      >
+                        O'chirish
+                      </button>
                     </td>
                   </tr>
                 ))}
-                {users.length === 0 && (
-                  <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500">Akkauntlar yo'q</td></tr>
+                {filteredUsers.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-400 font-medium">
+                      Hech qanday akkaunt topilmadi
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
           </div>
         )}
 
+        {/* Modal Form */}
         {showForm && (
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all max-h-[90vh] overflow-y-auto">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800">{editingId ? 'Akkauntni tahrirlash' : 'Yangi akkaunt'}</h2>
+            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-lg transform transition-all max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {editingId ? 'Akkauntni tahrirlash' : 'Yangi akkaunt yaratish'}
+                </h2>
+                <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
+                  ✕
+                </button>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">F.I.SH.</label>
-                  <input required className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} />
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">F.I.SH. *</label>
+                  <input 
+                    required 
+                    className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
+                    value={formData.full_name} 
+                    onChange={e => setFormData({...formData, full_name: e.target.value})} 
+                    placeholder="Masalan: Abdullayev Temur"
+                  />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Login</label>
-                  <input required className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Login (Username) *</label>
+                    <input 
+                      required 
+                      className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
+                      value={formData.username} 
+                      onChange={e => setFormData({...formData, username: e.target.value})} 
+                      placeholder="Login tanlang"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Parol {editingId ? '(yangi bo\'lsa)' : '*'}
+                    </label>
+                    <input 
+                      type="text" 
+                      required={!editingId} 
+                      className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
+                      value={formData.password} 
+                      onChange={e => setFormData({...formData, password: e.target.value})} 
+                      placeholder={editingId ? "O'zgartirmaslik uchun bo'sh" : "Parol kiriting"}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Parol {editingId && '(o\'zgartirish uchun kiriting)'}</label>
-                  <input type="text" required={!editingId} className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Roli *</label>
+                    <select 
+                      required 
+                      className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium" 
+                      value={formData.role} 
+                      onChange={e => setFormData({...formData, role: e.target.value})}
+                    >
+                      <option value="STARSSA">Starssa (Sardor)</option>
+                      <option value="USTOZ">Ustoz (O'qituvchi)</option>
+                      <option value="ADMIN">Admin (Boshqaruvchi)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Biriktirilgan guruh</label>
+                    <select 
+                      className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white" 
+                      value={formData.assigned_group} 
+                      onChange={e => setFormData({...formData, assigned_group: e.target.value})}
+                    >
+                      <option value="">— Guruh tanlanmagan —</option>
+                      {groups.map(g => (
+                        <option key={g.id} value={g.name}>{g.name}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Roli</label>
-                  <select required className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})}>
-                    <option value="STARSSA">Starssa</option>
-                    <option value="USTOZ">Ustoz</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Telefon raqami (ixtiyoriy)</label>
+                    <input 
+                      type="tel" 
+                      className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
+                      value={formData.phone} 
+                      onChange={e => setFormData({...formData, phone: e.target.value})} 
+                      placeholder="+998901234567"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Tug'ilgan sana (ixtiyoriy)</label>
+                    <input 
+                      type="date" 
+                      className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
+                      value={formData.birth_date} 
+                      onChange={e => setFormData({...formData, birth_date: e.target.value})} 
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Biriktirilgan guruh</label>
-                  <select className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={formData.assigned_group} onChange={e => setFormData({...formData, assigned_group: e.target.value})}>
-                    <option value="">— Guruh tanlanmagan —</option>
-                    {groups.map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
-                  </select>
-                </div>
+
                 {editingId && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select required className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
-                      <option value="ACTIVE">Faol (ACTIVE)</option>
-                      <option value="INACTIVE">Bloklangan (INACTIVE)</option>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Status</label>
+                    <select 
+                      required 
+                      className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium" 
+                      value={formData.status} 
+                      onChange={e => setFormData({...formData, status: e.target.value})}
+                    >
+                      <option value="ACTIVE">Faol (ACTIVE) — Tizimga kira oladi</option>
+                      <option value="INACTIVE">Bloklangan (INACTIVE) — Kirish taqiqlanadi</option>
                     </select>
                   </div>
                 )}
-                <div className="flex justify-end space-x-3 mt-6">
-                  <button type="button" onClick={() => setShowForm(false)} className="px-5 py-2.5 text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 rounded-xl transition-all">Bekor qilish</button>
-                  <button type="submit" className="px-5 py-2.5 bg-blue-600 font-medium text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all">Saqlash</button>
+
+                <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100">
+                  <button 
+                    type="button" 
+                    onClick={() => setShowForm(false)} 
+                    className="px-5 py-2.5 text-gray-700 font-semibold bg-gray-100 hover:bg-gray-200 rounded-xl transition-all"
+                  >
+                    Bekor qilish
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="px-6 py-2.5 bg-blue-600 font-bold text-white rounded-xl shadow-lg hover:bg-blue-700 active:scale-95 transition-all"
+                  >
+                    {editingId ? 'Saqlash' : 'Yaratish'}
+                  </button>
                 </div>
               </form>
             </div>

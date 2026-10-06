@@ -81,6 +81,7 @@ export default function AdminStudents() {
     if (!confirm("Haqiqatan ham o'chirmoqchimisiz?")) return;
     const res = await fetch(`/api/students/${id}`, { method: 'DELETE' });
     if (res.ok) fetchData();
+    else alert("O'chirishda xatolik yuz berdi");
   };
 
   const deleteGroup = async (id: string) => {

@@ -65,7 +65,7 @@ model AttendanceSession {
 model Attendance {
   id               String   @id @default(uuid())
   student_id       String
-  student          Student  @relation(fields: [student_id], references: [id])
+  student          Student  @relation(fields: [student_id], references: [id], onDelete: Cascade)
   
   session_id       String
   session          AttendanceSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
@@ -87,7 +87,7 @@ model AttendanceArchive {
 model Application {
   id               String   @id @default(uuid())
   student_id       String
-  student          Student  @relation(fields: [student_id], references: [id])
+  student          Student  @relation(fields: [student_id], references: [id], onDelete: Cascade)
   reason           String?
   missed_count     Int      @default(3)
   status           String   @default("YANGI")
@@ -115,7 +115,7 @@ model NotificationLog {
   type             String
   
   student_id       String?
-  student          Student? @relation(fields: [student_id], references: [id])
+  student          Student? @relation(fields: [student_id], references: [id], onDelete: Cascade)
   
   recipient_id     String
   recipient        User     @relation("NotificationRecipient", fields: [recipient_id], references: [id])

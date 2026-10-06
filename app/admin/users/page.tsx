@@ -33,17 +33,30 @@ export default function AdminUsers() {
   const [filterRole, setFilterRole] = useState('');
   const [filterGroup, setFilterGroup] = useState('');
 
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
+    setErrorMsg(null);
     try {
       const [uRes, gRes] = await Promise.all([fetch('/api/users'), fetch('/api/groups')]);
-      if (uRes.ok) setUsers(await uRes.json());
+      if (uRes.status === 401) {
+        setErrorMsg("Sessiya muddati tugagan yoki ruxsat yo'q. Iltimos qayta login qiling.");
+        return;
+      }
+      if (uRes.ok) {
+        setUsers(await uRes.json());
+      } else {
+        setErrorMsg("Akkauntlarni yuklashda xatolik yuz berdi");
+      }
       if (gRes.ok) setGroups(await gRes.json());
     } catch (e) {
       console.error(e);
+      setErrorMsg("Tarmoq xatosi yuz berdi");
     } finally {
       setLoading(false);
     }
@@ -168,12 +181,69 @@ export default function AdminUsers() {
             <h1 className="text-3xl font-bold text-gray-800">Akkauntlar Boshqaruvi</h1>
             <p className="text-gray-500 text-sm mt-1">Ustoz, Starssa va Admin login/parollarini yaratish, tahrirlash va o'chirish</p>
           </div>
-          <button 
-            onClick={handleOpenCreate} 
-            className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-2"
-          >
-            <span className="text-lg">+</span> Yangi akkaunt ochish
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={fetchData} 
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-1"
+              title="Yangilash"
+            >
+              🔄 Qayta yuklash
+            </button>
+            <button 
+              onClick={handleOpenCreate} 
+              className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-2"
+            >
+              <span className="text-lg">+</span> Yangi akkaunt ochish
+            </button>
+          </div>
+        </div>
+
+        {errorMsg && (
+          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">⚠️</span>
+              <p className="text-sm font-semibold">{errorMsg}</p>
+            </div>
+            <Link href="/" className="bg-red-600 text-white px-4 py-1.5 rounded-xl text-xs font-bold hover:bg-red-700 transition-all">
+              Qayta kirish
+            </Link>
+          </div>
+        )}
+
+        {/* Standart mavjud login va parollar eslatmasi */}
+        <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-5 rounded-2xl shadow-md mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold flex items-center gap-2">
+              <span>🔑</span> Tizimda mavjud asosiy login va parollar
+            </h2>
+            <span className="text-xs text-blue-200 bg-white/10 px-2.5 py-1 rounded-full font-medium">Boshlang'ich hisoblar</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+              <span className="text-red-300 font-bold block mb-1">👑 Admin</span>
+              <p className="text-gray-200">F.I.SH: <span className="font-semibold text-white">Admin Alisher</span></p>
+              <p className="text-gray-200">Login: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">Alisher</code></p>
+              <p className="text-gray-200">Parol: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">Alisher86438(</code></p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+              <span className="text-green-300 font-bold block mb-1">👨‍🏫 Ustoz</span>
+              <p className="text-gray-200">F.I.SH: <span className="font-semibold text-white">Bosh Ustoz (Shahnoza)</span></p>
+              <p className="text-gray-200">Login: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">Shahnozateacher</code></p>
+              <p className="text-gray-200">Parol: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">Shm0007@</code></p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+              <span className="text-blue-300 font-bold block mb-1">⭐ Starssa (Asosiy)</span>
+              <p className="text-gray-200">F.I.SH: <span className="font-semibold text-white">Xumoyunmirzo</span></p>
+              <p className="text-gray-200">Login: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">xumyunmirzo</code></p>
+              <p className="text-gray-200">Parol: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">thexumo00</code></p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+              <span className="text-blue-300 font-bold block mb-1">⭐ Starssa (Qizlar)</span>
+              <p className="text-gray-200">F.I.SH: <span className="font-semibold text-white">Mohinur</span></p>
+              <p className="text-gray-200">Login: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">moxinur</code></p>
+              <p className="text-gray-200">Parol: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">themoxinur081</code></p>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}

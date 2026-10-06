@@ -110,12 +110,12 @@ export default function AdminUsers() {
                     <td className="px-6 py-4 font-semibold">{u.full_name}</td>
                     <td className="px-6 py-4">{u.username}</td>
                     <td className="px-6 py-4">
-                      <span className={\`px-3 py-1 rounded-full text-xs font-bold \${u.role === 'ADMIN' ? 'bg-red-100 text-red-700' : u.role === 'USTOZ' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}\`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${u.role === 'ADMIN' ? 'bg-red-100 text-red-700' : u.role === 'USTOZ' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
                         {getRoleLabel(u.role)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={\`px-2 py-1 rounded text-xs \${u.status === 'ACTIVE' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}\`}>{u.status}</span>
+                      <span className={`px-2 py-1 rounded text-xs ${u.status === 'ACTIVE' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>{u.status}</span>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
                       <button onClick={() => { setEditingId(u.id); setFormData({ username: u.username, password: '', role: u.role, full_name: u.full_name, status: u.status }); setShowForm(true); }} className="text-blue-600 hover:text-blue-800 font-medium">Tahrirlash</button>

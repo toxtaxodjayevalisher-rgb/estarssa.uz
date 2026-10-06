@@ -20,7 +20,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     });
     
     if (session.created_by?.telegram_id) {
-       await sendTelegramMessage(\`⚠️ Admin davomatni qaytardi! Iltimos \${new Date(session.date).toLocaleDateString()} dagi \${session.group_name} guruhi davomatini qaytadan tekshirib yuboring.\`);
+       await sendTelegramMessage(`⚠️ Admin davomatni qaytardi! Iltimos ${new Date(session.date).toLocaleDateString()} dagi ${session.group_name} guruhi davomatini qaytadan tekshirib yuboring.`);
     }
 
     return NextResponse.json({ success: true });

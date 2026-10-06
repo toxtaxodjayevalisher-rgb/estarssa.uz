@@ -2,22 +2,24 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
-type User = { id: string, username: string, role: string, full_name: string, status: string, created_at: string };
+type User = { id: string, username: string, role: string, full_name: string, status: string, created_at: string, assigned_group?: string };
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
+  const [groups, setGroups] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ username: '', password: '', role: 'STARSSA', full_name: '', status: 'ACTIVE' });
+  const [formData, setFormData] = useState({ username: '', password: '', role: 'STARSSA', full_name: '', status: 'ACTIVE', assigned_group: '' });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchUsers();
+    fetchData();
   }, []);
 
-  const fetchUsers = async () => {
-    const res = await fetch('/api/users');
-    if (res.ok) setUsers(await res.json());
+  const fetchData = async () => {
+    const [uRes, gRes] = await Promise.all([fetch('/api/users'), fetch('/api/groups')]);
+    if (uRes.ok) setUsers(await uRes.json());
+    if (gRes.ok) setGroups(await gRes.json());
     setLoading(false);
   };
 
@@ -26,11 +28,9 @@ export default function AdminUsers() {
     const url = editingId ? `/api/users/${editingId}` : '/api/users';
     const method = editingId ? 'PUT' : 'POST';
     
-    // If editing and password is empty, don't send it
-    const dataToSend = { ...formData };
-    if (editingId && !dataToSend.password) {
-      delete (dataToSend as any).password;
-    }
+    const dataToSend: any = { ...formData };
+    if (editingId && !dataToSend.password) delete dataToSend.password;
+    if (!dataToSend.assigned_group) dataToSend.assigned_group = null;
     
     const res = await fetch(url, {
       method,
@@ -39,10 +39,10 @@ export default function AdminUsers() {
     });
     
     if (res.ok) {
-      await fetchUsers();
+      await fetchData();
       setShowForm(false);
       setEditingId(null);
-      setFormData({ username: '', password: '', role: 'STARSSA', full_name: '', status: 'ACTIVE' });
+      setFormData({ username: '', password: '', role: 'STARSSA', full_name: '', status: 'ACTIVE', assigned_group: '' });
     } else {
       const err = await res.json();
       alert(err.error || "Xatolik yuz berdi");
@@ -52,7 +52,7 @@ export default function AdminUsers() {
   const deleteUser = async (id: string) => {
     if (!confirm("Haqiqatan ham o'chirmoqchimisiz?")) return;
     const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-    if (res.ok) fetchUsers();
+    if (res.ok) fetchData();
     else {
       const err = await res.json();
       alert(err.error || "Xatolik");
@@ -63,6 +63,12 @@ export default function AdminUsers() {
     if (role === 'ADMIN') return 'Admin';
     if (role === 'USTOZ') return 'Ustoz';
     return 'Starssa';
+  };
+
+  const openEdit = (u: User) => {
+    setEditingId(u.id);
+    setFormData({ username: u.username, password: '', role: u.role, full_name: u.full_name, status: u.status, assigned_group: u.assigned_group || '' });
+    setShowForm(true);
   };
 
   return (
@@ -89,7 +95,7 @@ export default function AdminUsers() {
       <div className="flex-1 p-4 md:p-8 overflow-y-auto text-black relative w-full">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Akkauntlar</h1>
-          <button onClick={() => { setEditingId(null); setFormData({ username: '', password: '', role: 'STARSSA', full_name: '', status: 'ACTIVE' }); setShowForm(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all">+ Yangi akkaunt</button>
+          <button onClick={() => { setEditingId(null); setFormData({ username: '', password: '', role: 'STARSSA', full_name: '', status: 'ACTIVE', assigned_group: '' }); setShowForm(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all">+ Yangi akkaunt</button>
         </div>
         
         {loading ? <p>Yuklanmoqda...</p> : (
@@ -100,6 +106,7 @@ export default function AdminUsers() {
                   <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">F.I.SH.</th>
                   <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Login</th>
                   <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Rol</th>
+                  <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Guruh</th>
                   <th className="text-left px-6 py-4 font-medium text-gray-500 uppercase">Status</th>
                   <th className="text-right px-6 py-4 font-medium text-gray-500 uppercase">Amallar</th>
                 </tr>
@@ -115,14 +122,24 @@ export default function AdminUsers() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded text-xs ${u.status === 'ACTIVE' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>{u.status}</span>
+                      {u.assigned_group ? (
+                        <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">{u.assigned_group}</span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded text-xs ${u.status === 'ACTIVE' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>{u.status === 'ACTIVE' ? 'Faol' : 'Bloklangan'}</span>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
-                      <button onClick={() => { setEditingId(u.id); setFormData({ username: u.username, password: '', role: u.role, full_name: u.full_name, status: u.status }); setShowForm(true); }} className="text-blue-600 hover:text-blue-800 font-medium">Tahrirlash</button>
+                      <button onClick={() => openEdit(u)} className="text-blue-600 hover:text-blue-800 font-medium">Tahrirlash</button>
                       <button onClick={() => deleteUser(u.id)} className="text-red-600 hover:text-red-800 font-medium ml-2">O'chirish</button>
                     </td>
                   </tr>
                 ))}
+                {users.length === 0 && (
+                  <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500">Akkauntlar yo'q</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -130,7 +147,7 @@ export default function AdminUsers() {
 
         {showForm && (
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
+            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all max-h-[90vh] overflow-y-auto">
               <h2 className="text-2xl font-bold mb-6 text-gray-800">{editingId ? 'Akkauntni tahrirlash' : 'Yangi akkaunt'}</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -151,6 +168,13 @@ export default function AdminUsers() {
                     <option value="STARSSA">Starssa</option>
                     <option value="USTOZ">Ustoz</option>
                     <option value="ADMIN">Admin</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Biriktirilgan guruh</label>
+                  <select className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={formData.assigned_group} onChange={e => setFormData({...formData, assigned_group: e.target.value})}>
+                    <option value="">— Guruh tanlanmagan —</option>
+                    {groups.map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
                   </select>
                 </div>
                 {editingId && (

@@ -5,13 +5,21 @@ import { verifyAuth } from '@/lib/auth';
 export async function GET() {
   const auth = await verifyAuth();
   if (!auth) return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 401 });
+  if (auth.role.toUpperCase() !== 'USTOZ') return NextResponse.json({ error: "Faqat USTOZ uchun" }, { status: 403 });
 
   try {
+    // Ustoz faqat o'z guruhining davomatlarini ko'radi
+    const where: any = { status: 'SENT_FOR_APPROVAL' };
+    if (auth.assigned_group) {
+      where.group_name = auth.assigned_group;
+    }
+
     const sessions = await prisma.attendanceSession.findMany({
-      where: { status: 'SENT_FOR_APPROVAL' },
+      where,
       include: {
         records: { include: { student: true } }
-      }
+      },
+      orderBy: { date: 'desc' }
     });
     return NextResponse.json(sessions);
   } catch(e) {
@@ -44,10 +52,9 @@ export async function POST(req: Request) {
     } else if (action === 'redo') {
       await prisma.attendanceSession.update({
         where: { id: session_id },
-        data: { status: 'DRAFT', submitted_at: null } // Starssa qayta qilishi uchun
+        data: { status: 'DRAFT', submitted_at: null }
       });
     } else if (action === 'reject') {
-      // Butunlay bekor qilish (o'chirib yuborish)
       await prisma.attendance.deleteMany({ where: { session_id } });
       await prisma.attendanceSession.delete({ where: { id: session_id } });
     }

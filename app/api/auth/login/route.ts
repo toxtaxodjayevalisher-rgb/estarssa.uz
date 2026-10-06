@@ -16,7 +16,13 @@ export async function POST(req: Request) {
     const isValid = await bcrypt.compare(password, user.password_hash);
     if (!isValid) return NextResponse.json({ error: 'Login yoki parol noto\'g\'ri' }, { status: 401 });
     
-    const token = jwt.sign({ id: user.id, role: user.role, username: user.username }, JWT_SECRET, { expiresIn: '1d' });
+    if (user.status !== 'ACTIVE') return NextResponse.json({ error: 'Akkaunt bloklangan' }, { status: 403 });
+    
+    const token = jwt.sign(
+      { id: user.id, role: user.role, username: user.username, assigned_group: user.assigned_group, full_name: user.full_name },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
     
     const cookieStore = await cookies();
     cookieStore.set('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/' });

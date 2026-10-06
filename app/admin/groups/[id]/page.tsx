@@ -32,7 +32,7 @@ export default function GroupDetails() {
       }
       setGroup(current);
 
-      const uRes = await fetch(\`/api/users?assigned_group=\${encodeURIComponent(current.name)}\`);
+      const uRes = await fetch(`/api/users?assigned_group=${encodeURIComponent(current.name)}`);
       if (uRes.ok) {
         setUsers(await uRes.json());
       }
@@ -64,7 +64,7 @@ export default function GroupDetails() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const url = editingId ? \`/api/users/\${editingId}\` : '/api/users';
+    const url = editingId ? `/api/users/${editingId}` : '/api/users';
     const method = editingId ? 'PUT' : 'POST';
     
     const dataToSend: any = { ...formData, assigned_group: group.name };
@@ -89,7 +89,7 @@ export default function GroupDetails() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Haqiqatan ham o'chirmoqchimisiz?")) return;
-    const res = await fetch(\`/api/users/\${id}\`, { method: 'DELETE' });
+    const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
     if (res.ok) fetchData();
     else alert("O'chirishda xatolik");
   };

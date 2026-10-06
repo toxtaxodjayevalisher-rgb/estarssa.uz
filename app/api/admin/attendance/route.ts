@@ -48,7 +48,7 @@ export async function POST(req: Request) {
           date: new Date(date),
           group_name,
           status: 'HOLIDAY',
-          created_by_id: auth.userId
+          created_by_id: auth.id
         }
       });
     }

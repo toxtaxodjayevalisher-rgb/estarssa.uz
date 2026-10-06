@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 
 export default function AdminAttendance() {
   const [sessions, setSessions] = useState<any[]>([]);
@@ -63,6 +64,42 @@ export default function AdminAttendance() {
     }
   };
 
+  
+  const exportToExcel = () => {
+    const data: any[] = [];
+    sessions.forEach(s => {
+      if (s.records && s.records.length > 0) {
+        s.records.forEach((r: any) => {
+          data.push({
+            'Sana': new Date(s.date).toLocaleDateString(),
+            'Guruh': s.group_name,
+            "O'quvchi F.I.SH.": r.student?.full_name || "Noma'lum",
+            'Holati': r.status === 'KELDI' || r.status === 'Keldi' ? 'Keldi' : r.status === 'KELMADI' || r.status === 'Kelmadi' ? 'Kelmadi' : 'Sababli',
+            'Izoh': r.note || '',
+            'Tasdiqlangan': s.status === 'APPROVED' ? 'Tasdiqlangan' : s.status === 'HOLIDAY' ? 'Bayram' : 'Kutilyapti'
+          });
+        });
+      } else {
+         data.push({
+            'Sana': new Date(s.date).toLocaleDateString(),
+            'Guruh': s.group_name,
+            "O'quvchi F.I.SH.": '-',
+            'Holati': s.status === 'HOLIDAY' ? 'Bayram/Dam olish' : s.status,
+            'Izoh': '-',
+            'Tasdiqlangan': '-'
+         });
+      }
+    });
+    if (data.length === 0) {
+      alert("Yuklab olish uchun davomat ma'lumotlari yo'q");
+      return;
+    }
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Davomat");
+    XLSX.writeFile(workbook, "Davomat_Hisoboti.xlsx");
+  };
+
   return (
     <div className="flex flex-col md:flex-row h-[100dvh] bg-slate-50 overflow-hidden">
       <div className="w-full md:w-64 bg-[#0a1128] text-white shadow-2xl z-20 flex flex-col flex-shrink-0">
@@ -73,6 +110,7 @@ export default function AdminAttendance() {
           <Link href="/admin/attendance" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/30 font-bold transition-all transform hover:scale-[1.02]">Davomat</Link>
           <Link href="/admin/users" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Akkauntlar</Link>
           <Link href="/admin/announcements" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">E'lonlar</Link>
+            <Link href="/admin/ratings" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Reyting</Link>
         </nav>
         <div className="p-4 mt-auto border-t border-slate-800 hidden md:block">
           <Link href="/logout" className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-600 px-4 py-3 rounded-xl text-red-500 hover:text-white font-semibold transition-all group">
@@ -85,10 +123,16 @@ export default function AdminAttendance() {
       </div>
       
       <div className="flex-1 p-4 md:p-8 overflow-y-auto text-black relative w-full">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Davomat Nazorati</h1>
-          <button onClick={() => setShowHolidayForm(true)} className="bg-purple-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-purple-700 transition-all">+ Bayram qilib yopish</button>
-        </div>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h1 className="text-3xl font-bold">Davomat Nazorati</h1>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <button onClick={exportToExcel} className="bg-green-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2 flex-1 sm:flex-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                Excel (Yuklab olish)
+              </button>
+              <button onClick={() => setShowHolidayForm(true)} className="bg-purple-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-purple-700 transition-all flex-1 sm:flex-none">+ Bayram</button>
+            </div>
+          </div>
         
         {loading ? <p>Yuklanmoqda...</p> : (
           <div className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all overflow-hidden">
@@ -195,7 +239,6 @@ export default function AdminAttendance() {
                     )}
                   </tbody>
                 </table>
-</div>
               </div>
               
               <div className="mt-6 flex justify-end">

@@ -34,28 +34,17 @@ export async function POST(req: Request) {
     }
 
     let imageUrl = null;
-    let caption = `📢 E'LON: ${title}\n\n${content}\n\n✍️ Yuboruvchi: ${auth.role}`;
+    let caption = \`📢 E'LON: \${title}\\n\\n\${content}\\n\\n✍️ Yuboruvchi: \${auth.role}\`;
+    let msgIds: any = [];
 
-    // Always send text message or photo to telegram
     if (image && image.size > 0) {
-      // Save as base64 for DB
       const bytes = await image.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const base64 = `data:${image.type};base64,${buffer.toString('base64')}`;
+      const base64 = \`data:\${image.type};base64,\${buffer.toString('base64')}\`;
       imageUrl = base64;
-      
-      // Send to telegram
-      try {
-        await sendTelegramPhoto(caption, image);
-      } catch (e) {
-        console.error("Telegram error:", e);
-      }
+      msgIds = await sendTelegramPhoto(caption, image);
     } else {
-      try {
-        await sendTelegramMessage(caption);
-      } catch (e) {
-        console.error("Telegram error:", e);
-      }
+      msgIds = await sendTelegramMessage(caption);
     }
 
     const announcement = await prisma.announcement.create({
@@ -63,7 +52,8 @@ export async function POST(req: Request) {
         title,
         content,
         image_url: imageUrl,
-        created_by: auth.role, // "Ustoz", "Admin", etc
+        created_by: auth.role,
+        telegram_msg_ids: JSON.stringify(msgIds)
       }
     });
 

@@ -64,6 +64,21 @@ export default function AnnouncementsClient({ role }: { role: string }) {
     }
   };
 
+  const deleteAnnouncement = async (id: string) => {
+    if (!confirm("Rostdan ham ushbu e'lonni o'chirmoqchimisiz? Bu amal Telegram guruhidan ham xabarni o'chirib tashlaydi!")) return;
+    
+    try {
+      const res = await fetch(\`/api/announcements/\${id}\`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchAnnouncements();
+      } else {
+        alert("O'chirishda xatolik yuz berdi");
+      }
+    } catch (e) {
+      alert("Xatolik");
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -123,9 +138,9 @@ export default function AnnouncementsClient({ role }: { role: string }) {
 
       <div className="space-y-6">
         {announcements.map((a) => (
-          <div key={a.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all">
+          <div key={a.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all relative">
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-bold text-blue-900">{a.title}</h3>
+              <h3 className="text-xl font-bold text-blue-900 pr-12">{a.title}</h3>
               <span className="text-xs font-semibold px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
                 {a.created_by}
               </span>
@@ -136,8 +151,19 @@ export default function AnnouncementsClient({ role }: { role: string }) {
                 <Image src={a.image_url} alt="E'lon rasmi" fill className="object-cover" />
               </div>
             )}
-            <div className="text-right text-sm text-gray-400">
-              {new Date(a.created_at).toLocaleString('uz-UZ')}
+            <div className="flex justify-between items-center mt-4">
+              <div className="text-sm text-gray-400">
+                {new Date(a.created_at).toLocaleString('uz-UZ')}
+              </div>
+              
+              {(role === 'ADMIN' || role === 'USTOZ') && (
+                <button 
+                  onClick={() => deleteAnnouncement(a.id)} 
+                  className="text-red-500 hover:text-red-700 text-sm font-bold bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all"
+                >
+                  O'chirish
+                </button>
+              )}
             </div>
           </div>
         ))}

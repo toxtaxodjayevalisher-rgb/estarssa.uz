@@ -1,30 +1,27 @@
 const fs = require('fs');
 
-const files = [
-  'app/admin/attendance/page.tsx',
-  'app/admin/students/page.tsx',
-  'app/admin/users/page.tsx',
-  'app/starssa/attendance/page.tsx',
-  'app/starssa/students/page.tsx',
-  'app/ustoz/students/page.tsx'
-];
+function fixTable(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  let content = fs.readFileSync(filePath, 'utf8');
 
-files.forEach(file => {
-  let content = fs.readFileSync(file, 'utf8');
-  
-  // Replace the opening table tag with a wrapper + clean table tag
-  content = content.split('<table className="min-w-full block md:table overflow-x-auto whitespace-nowrap md:whitespace-normal text-sm">').join('<div className="overflow-x-auto w-full">\n<table className="min-w-full text-sm whitespace-nowrap md:whitespace-normal">');
-  
-  // Replace closing table tag with closing table + closing wrapper div
-  // But ONLY for the ones we wrapped. To be safe, we'll replace all </table> with </table></div> 
-  // Wait, if a file has multiple tables, that could break. Let's count them.
-  let tableCount = (content.match(/<table /g) || []).length;
-  if (tableCount > 0) {
-    // If we just replace </table> with </table>\n</div>, it will wrap every table.
-    // Let's just do it, since all tables in these files were the ones causing issues.
-    content = content.split('</table>').join('</table>\n</div>');
+  // Check if {idx + 1} is already there
+  if (content.includes('{idx + 1}')) {
+    console.log(`Already fixed: ${filePath}`);
+    return;
   }
 
-  fs.writeFileSync(file, content);
-  console.log('Fixed', file);
-});
+  // Change map(s => to map((s, idx) =>
+  content = content.replace(/\{students\.map\(s => \{/g, '{students.map((s, idx) => {');
+  content = content.replace(/\{students\.map\(\(s\) => \{/g, '{students.map((s, idx) => {');
+  
+  // Insert the td for sequence number right after <tr ...>
+  content = content.replace(
+    /(<tr[^>]*key=\{s\.id\}[^>]*>)/g,
+    '$1\n                        <td className="px-6 py-4 whitespace-nowrap text-gray-500 font-medium">{idx + 1}</td>'
+  );
+
+  fs.writeFileSync(filePath, content);
+  console.log(`Fixed: ${filePath}`);
+}
+
+['app/ustoz/students/page.tsx', 'app/starssa/students/page.tsx', 'app/admin/students/page.tsx'].forEach(fixTable);

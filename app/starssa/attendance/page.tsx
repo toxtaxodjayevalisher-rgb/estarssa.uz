@@ -80,7 +80,7 @@ export default function StarssaAttendance() {
         </nav>
       </div>
       <div className="flex-1 p-4 md:p-8 overflow-y-auto text-black relative w-full">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-3xl font-bold">Davomat Qilish</h1>
           <button onClick={handleSubmit} className="bg-green-600 text-white px-6 py-2 rounded font-bold shadow-lg">Tasdiqlash uchun yuborish</button>
         </div>
@@ -91,29 +91,31 @@ export default function StarssaAttendance() {
 <table className="min-w-full text-sm whitespace-nowrap md:whitespace-normal">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-500 uppercase">O'quvchi</th>
+                  <th className="text-left px-2 sm:px-4 py-3 font-medium text-gray-500 uppercase w-10">#</th>
+                    <th className="text-left px-2 sm:px-4 py-3 font-medium text-gray-500 uppercase">O'quvchi</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-500 uppercase">Holati</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-500 uppercase">Sababi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {students.map(s => (
+                {students.map((s, idx) => (
                   <tr key={s.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 whitespace-nowrap font-medium w-1/3">{s.full_name} <span className="text-gray-400 text-xs ml-2">({s.group_name})</span></td>
-                    <td className="px-4 py-4 whitespace-nowrap flex space-x-2">
+                    <td className="px-2 sm:px-4 py-3 whitespace-nowrap text-gray-500">{idx + 1}</td>
+                      <td className="px-2 sm:px-4 py-3 whitespace-normal font-medium w-1/3 sm:whitespace-nowrap">{s.full_name} <span className="text-gray-400 text-xs ml-2">({s.group_name})</span></td>
+                    <td className="px-2 sm:px-4 py-3 flex flex-wrap sm:flex-nowrap gap-2">
                       <button 
                         onClick={() => handleStatusChange(s.id, 'KELDI')}
-                        className={`px-3 py-1 rounded ${attendance[s.id]?.status === 'KELDI' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
+                        className={`px-2 py-1.5 sm:px-3 sm:py-1 rounded text-xs sm:text-sm font-semibold transition-all shadow-sm active:scale-95 ${attendance[s.id]?.status === 'KELDI' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}>
                         🟢 Keldi
                       </button>
                       <button 
                         onClick={() => handleStatusChange(s.id, 'KECHIKIB_KELDI')}
-                        className={`px-3 py-1 rounded ${attendance[s.id]?.status === 'KECHIKIB_KELDI' ? 'bg-yellow-500 text-white' : 'bg-gray-200'}`}>
+                        className={`px-2 py-1.5 sm:px-3 sm:py-1 rounded text-xs sm:text-sm font-semibold transition-all shadow-sm active:scale-95 ${attendance[s.id]?.status === 'KECHIKIB_KELDI' ? 'bg-yellow-500 text-white' : 'bg-gray-200'}`}>
                         🟡 Kechikdi
                       </button>
                       <button 
                         onClick={() => handleStatusChange(s.id, 'KELMADI')}
-                        className={`px-3 py-1 rounded ${attendance[s.id]?.status === 'KELMADI' ? 'bg-red-500 text-white' : 'bg-gray-200'}`}>
+                        className={`px-2 py-1.5 sm:px-3 sm:py-1 rounded text-xs sm:text-sm font-semibold transition-all shadow-sm active:scale-95 ${attendance[s.id]?.status === 'KELMADI' ? 'bg-red-500 text-white' : 'bg-gray-200'}`}>
                         🔴 Kelmadi
                       </button>
                     </td>

@@ -211,42 +211,6 @@ export default function AdminUsers() {
           </div>
         )}
 
-        {/* Standart mavjud login va parollar eslatmasi */}
-        <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-5 rounded-2xl shadow-md mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold flex items-center gap-2">
-              <span>🔑</span> Tizimda mavjud asosiy login va parollar
-            </h2>
-            <span className="text-xs text-blue-200 bg-white/10 px-2.5 py-1 rounded-full font-medium">Boshlang'ich hisoblar</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-            <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/10">
-              <span className="text-red-300 font-bold block mb-1">👑 Admin</span>
-              <p className="text-gray-200">F.I.SH: <span className="font-semibold text-white">Admin Alisher</span></p>
-              <p className="text-gray-200">Login: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">Alisher</code></p>
-              <p className="text-gray-200">Parol: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">Alisher86438(</code></p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/10">
-              <span className="text-green-300 font-bold block mb-1">👨‍🏫 Ustoz</span>
-              <p className="text-gray-200">F.I.SH: <span className="font-semibold text-white">Bosh Ustoz (Shahnoza)</span></p>
-              <p className="text-gray-200">Login: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">Shahnozateacher</code></p>
-              <p className="text-gray-200">Parol: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">Shm0007@</code></p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/10">
-              <span className="text-blue-300 font-bold block mb-1">⭐ Starssa (Asosiy)</span>
-              <p className="text-gray-200">F.I.SH: <span className="font-semibold text-white">Xumoyunmirzo</span></p>
-              <p className="text-gray-200">Login: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">xumyunmirzo</code></p>
-              <p className="text-gray-200">Parol: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">thexumo00</code></p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/10">
-              <span className="text-blue-300 font-bold block mb-1">⭐ Starssa (Qizlar)</span>
-              <p className="text-gray-200">F.I.SH: <span className="font-semibold text-white">Mohinur</span></p>
-              <p className="text-gray-200">Login: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">moxinur</code></p>
-              <p className="text-gray-200">Parol: <code className="bg-black/30 px-1 py-0.5 rounded text-yellow-300 font-mono">themoxinur081</code></p>
-            </div>
-          </div>
-        </div>
-
         {/* Filters */}
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-wrap gap-4 items-center">
           <div className="flex items-center gap-2">

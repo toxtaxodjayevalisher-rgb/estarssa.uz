@@ -99,13 +99,14 @@ export default function StarssaStudents() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {students.map(s => {
+                {students.map((s, idx) => {
                   const kech = s.attendances?.filter(a => a.status === 'KECHIKIB_KELDI').length || 0;
                   const sababsiz = s.attendances?.filter(a => a.status === 'KELMADI').length || 0;
                   const sababli = s.attendances?.filter(a => a.status === 'UZR_LI').length || 0;
 
                   return (
                     <tr key={s.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-500 font-medium">{idx + 1}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{s.full_name}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{s.group_name}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{s.birth_date ? new Date(s.birth_date).toLocaleDateString() : '-'}</td>

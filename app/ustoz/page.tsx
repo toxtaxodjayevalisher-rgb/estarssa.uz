@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import BirthdayBanner from '@/app/components/BirthdayBanner';
+import { formatUzDate, formatUzDateShort } from '@/lib/date';
 
 type Student = { id: string, full_name: string, group_name: string, phone?: string, birth_date?: string };
 type StatsData = {
@@ -179,8 +180,8 @@ export default function UstozDashboard() {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Ustoz Kabineti</h1>
             <p className="text-sm text-slate-500 mt-1">Dars jarayoni, davomat nazorati va tezkor xabarlar paneli</p>
           </div>
-          <div className="text-xs sm:text-sm text-slate-500 font-medium bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm inline-flex items-center gap-2">
-            <span>📅</span> {new Date().toLocaleDateString('uz-UZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          <div suppressHydrationWarning className="text-xs sm:text-sm text-slate-500 font-medium bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm inline-flex items-center gap-2">
+            <span>📅</span> {formatUzDate()}
           </div>
         </div>
 
@@ -322,8 +323,8 @@ export default function UstozDashboard() {
                   <div key={session.id} className="bg-slate-50 hover:bg-slate-100/80 rounded-xl p-4 border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-slate-800 text-base">
-                          📅 {new Date(session.date).toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        <span suppressHydrationWarning className="font-extrabold text-slate-800 text-base">
+                          📅 {formatUzDate(session.date)}
                         </span>
                         <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-md">
                           Guruh: {session.group_name}
@@ -607,8 +608,8 @@ export default function UstozDashboard() {
                   {selectedAlert.student.attendances.map((r: any) => (
                     <li key={r.id} className="p-3 border border-slate-200 bg-white rounded-xl shadow-xs">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-xs text-slate-800">
-                          📅 {new Date(r.date).toLocaleDateString('uz-UZ')}
+                        <span suppressHydrationWarning className="font-bold text-xs text-slate-800">
+                          📅 {formatUzDateShort(r.date)}
                         </span>
                         <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
                           r.status === 'KELMADI' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-800'
@@ -686,8 +687,8 @@ export default function UstozDashboard() {
                       </a>
                     )}
                     {selectedViolator.student.birth_date && (
-                      <span>
-                        🎂 {new Date(selectedViolator.student.birth_date).toLocaleDateString('uz-UZ')}
+                      <span suppressHydrationWarning>
+                        🎂 {formatUzDateShort(selectedViolator.student.birth_date)}
                       </span>
                     )}
                   </div>
@@ -736,8 +737,8 @@ export default function UstozDashboard() {
                       return (
                         <li key={r.id} className="p-4 border border-slate-200 rounded-2xl bg-slate-50 hover:bg-white transition-all shadow-xs">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="font-bold text-sm text-slate-800 flex items-center gap-1.5">
-                              <span>📅</span> {new Date(r.date).toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            <span suppressHydrationWarning className="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+                              <span>📅</span> {formatUzDate(r.date)}
                             </span>
                             <span className={`text-xs font-extrabold px-2.5 py-1 rounded-full ${
                               r.status === 'KELMADI' ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-amber-100 text-amber-800 border border-amber-200'

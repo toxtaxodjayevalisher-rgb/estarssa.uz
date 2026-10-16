@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { formatUzDateShort } from '@/lib/date';
 
 type Student = { id: string, full_name: string, group_name: string };
 type AttendanceStatus = 'KELDI' | 'KECHIKIB_KELDI' | 'UZR_LI' | 'KELMADI';
@@ -178,7 +179,7 @@ export default function StarssaAttendance() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Bugungi Davomat</h1>
             <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-              Sana: <span className="font-semibold text-slate-700">{new Date().toLocaleDateString('uz-UZ')}</span> | Guruh: <span className="font-semibold text-blue-600">{groupName}</span>
+              Sana: <span suppressHydrationWarning className="font-semibold text-slate-700">{formatUzDateShort()}</span> | Guruh: <span className="font-semibold text-blue-600">{groupName}</span>
             </p>
           </div>
           {!isLocked && (

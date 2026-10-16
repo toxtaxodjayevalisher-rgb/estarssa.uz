@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import html2canvas from 'html2canvas';
+import { formatUzDateShort } from '@/lib/date';
 
 export default function RatingsPage() {
   const [stats, setStats] = useState<any>(null);
@@ -114,7 +115,7 @@ export default function RatingsPage() {
                         <p className="text-xs font-bold text-slate-600 uppercase">E-Starssa Ma'muriyati</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-sm font-bold text-slate-800">{new Date().toLocaleDateString()}</p>
+                        <p suppressHydrationWarning className="text-sm font-bold text-slate-800">{formatUzDateShort()}</p>
                         <p className="text-xs font-bold text-slate-600 uppercase">Sana</p>
                       </div>
                     </div>

@@ -43,6 +43,7 @@ export async function GET() {
         kechikdi: [], 
         sababli: [],
         kelmadi: [],
+        records: [],
         status: 'Boshlanmagan'
       });
     }
@@ -59,6 +60,7 @@ export async function GET() {
       kechikdi,
       sababli,
       kelmadi,
+      records: session.records,
       status: session.status
     });
   } catch(e) {

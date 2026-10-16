@@ -94,69 +94,49 @@ export async function POST(req: Request) {
     await prisma.attendance.createMany({ data: attendanceData });
 
     if (submit) {
-      const totalStudents = records.length;
-      const presentOrLate = records.filter((r: any) => r.status === 'KELDI' || r.status === 'KECHIKIB_KELDI').length;
-      const percent = totalStudents > 0 ? Math.round((presentOrLate / totalStudents) * 100) : 0;
-      
-      const absentees = records.filter((r: any) => r.status === 'KELMADI');
-      const uzrlilar = records.filter((r: any) => r.status === 'UZR_LI');
-      const lates = records.filter((r: any) => r.status === 'KECHIKIB_KELDI');
-
       const studentIds = records.map((r: any) => r.student_id);
-      const dbStudents = await prisma.student.findMany({ where: { id: { in: studentIds } }, include: { attendances: true } });
+      const dbStudents = await prisma.student.findMany({ where: { id: { in: studentIds } } });
       const studentMap: Record<string, any> = {};
       dbStudents.forEach(s => { studentMap[s.id] = s; });
 
-      const dateStr = new Date(date).toLocaleDateString('uz-UZ');
+      // Faqat KELDI bo'lmagan o'quvchilar
+      const notPresent = records.filter((r: any) => r.status !== 'KELDI');
 
-      // Sababsiz kelmaganlar
-      let absenteesBlock = '';
-      if (absentees.length > 0) {
-        const list = absentees.map((r: any) => `- ${studentMap[r.student_id]?.full_name || "O'quvchi"}: ${r.note || 'Sababsiz'}`).join('\n');
-        absenteesBlock = `\nSababsiz kelmaganlar: ${absentees.length} ta\n${list}`;
+      let telegramMessage = '';
+      if (notPresent.length === 0) {
+        // Hamma kelgan bo'lsa
+        telegramMessage = `Assalomu alaykum\n${finalGroupName} 100%`;
+      } else {
+        // Kimdir kasal, sababsiz yoki kechikkan bo'lsa
+        const list = notPresent.map((r: any) => {
+          const student = studentMap[r.student_id];
+          const name = student?.full_name || "O'quvchi";
+          let reason = (r.note || '').trim();
+          if (!reason) {
+            if (r.status === 'UZR_LI') reason = 'kasal';
+            else if (r.status === 'KELMADI') reason = 'sababsiz';
+            else if (r.status === 'KECHIKIB_KELDI') reason = 'kechikdi';
+          }
+          return `${name}(${reason})`;
+        }).join('\n');
+
+        telegramMessage = `Assalomu alaykum\n${finalGroupName}\n${list}`;
       }
-
-      // Sababli kelmaganlar (UZR_LI)
-      let uzrlilarBlock = '';
-      if (uzrlilar.length > 0) {
-        const list = uzrlilar.map((r: any) => `- ${studentMap[r.student_id]?.full_name || "O'quvchi"}: ${r.note || 'Sababli'}`).join('\n');
-        uzrlilarBlock = `\nSababli (uzrli): ${uzrlilar.length} ta\n${list}`;
-      }
-
-      // Kech qolganlar
-      let latesBlock = '';
-      if (lates.length > 0) {
-        const list = lates.map((r: any) => `- ${studentMap[r.student_id]?.full_name || "O'quvchi"}: ${r.note || 'Soati kiritilmagan'}`).join('\n');
-        latesBlock = `\nKech qolganlar: ${lates.length} ta\n${list}`;
-      }
-
-      // Qoidabuzarlar (faqat KELMADI va KECHIKIB_KELDI hisoblanadi, UZR_LI qoidabuzar emas)
-      const qoidabuzarlar = dbStudents.filter(s => {
-        const h = s.attendances.filter(a => a.status === 'KELMADI' || a.status === 'KECHIKIB_KELDI').length;
-        return h >= 2;
-      });
-      let qoidabuzarText = '';
-      if (qoidabuzarlar.length > 0) {
-        qoidabuzarText = '\n\nDoimiy qoidabuzarlar:\n' + qoidabuzarlar.map(s => `- ${s.full_name}`).join('\n');
-      }
-
-      const groupMsg = `Assalomu aleykum\n${dateStr}\n${finalGroupName} guruhi\nDavomat: ${percent}%${absenteesBlock}${uzrlilarBlock}`;
-      const ustozMsg = `Assalomu aleykum ustoz\n${dateStr}\n${finalGroupName} guruhi\nDavomat: ${percent}%${absenteesBlock}${uzrlilarBlock}\n${latesBlock}${qoidabuzarText}`;
 
       try {
         const token = process.env.TELEGRAM_BOT_TOKEN || '8983797302:AAHrMF0yZQ0qOgRGgE96SL6nV5hMKPdD_p4';
-        await globalThis.fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: '-5459131960', text: groupMsg })
-        });
+        const CHAT_IDS = ['-5459131960', '1973751873'];
         
-        await globalThis.fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: '-5459131960', text: ustozMsg })
-        });
-      } catch(e) { console.error("Telegram xatosi:", e); }
+        for (const chatId of CHAT_IDS) {
+          await globalThis.fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chatId, text: telegramMessage })
+          });
+        }
+      } catch(e) { 
+        console.error("Telegram xatosi:", e); 
+      }
     }
 
     return NextResponse.json({ success: true, session });

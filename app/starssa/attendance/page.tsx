@@ -37,9 +37,9 @@ export default function StarssaAttendance() {
       if (status === 'KECHIKIB_KELDI') {
         newNote = newNote || new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
       } else if (status === 'UZR_LI') {
-        newNote = newNote || 'Sababli (kasal yoki ruxsat olgan)';
+        newNote = newNote || 'kasal';
       } else if (status === 'KELMADI') {
-        newNote = newNote || 'Sababsiz';
+        newNote = newNote || 'sababsiz';
       } else {
         newNote = undefined;
       }
@@ -66,11 +66,11 @@ export default function StarssaAttendance() {
       student_id,
       status: data.status,
       note: data.status === 'KELMADI' 
-        ? (data.note?.trim() || 'Sababsiz') 
+        ? (data.note?.trim() || 'sababsiz') 
         : data.status === 'UZR_LI'
-        ? (data.note?.trim() || 'Sababli')
+        ? (data.note?.trim() || 'kasal')
         : data.status === 'KECHIKIB_KELDI'
-        ? (data.note?.trim() || 'Kechikdi')
+        ? (data.note?.trim() || 'kechikdi')
         : null
     }));
 
@@ -87,7 +87,7 @@ export default function StarssaAttendance() {
         })
       });
       if (res.ok) {
-        alert("Davomat muvaffaqiyatli Ustozga tasdiqlash uchun yuborildi!");
+        alert("Davomat muvaffaqiyatli Ustozga tasdiqlash uchun va Telegramga yuborildi!");
         window.location.href = "/starssa";
       } else {
         const data = await res.json();
@@ -139,16 +139,9 @@ export default function StarssaAttendance() {
             <button 
               type="button"
               onClick={markAllPresent} 
-              className="text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl font-medium transition-all"
+              className="text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-xl font-medium transition-all"
             >
               ✓ Barchani "Keldi" qilish
-            </button>
-            <button 
-              onClick={handleSubmit} 
-              disabled={submitting || loading}
-              className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-emerald-600/20 active:scale-95 transition-all text-sm disabled:opacity-50"
-            >
-              {submitting ? 'Yuborilmoqda...' : 'Tasdiqlashga yuborish ➔'}
             </button>
           </div>
         </div>
@@ -176,7 +169,7 @@ export default function StarssaAttendance() {
         {loading ? (
           <div className="p-12 text-center text-gray-500 font-medium">O'quvchilar yuklanmoqda...</div>
         ) : (
-          <div className="space-y-2.5 pb-20">
+          <div className="space-y-2.5 pb-8">
             {students.map((s, idx) => {
               const currentStatus = attendance[s.id]?.status || 'KELDI';
               const currentNote = attendance[s.id]?.note || '';
@@ -213,9 +206,9 @@ export default function StarssaAttendance() {
                       <button
                         type="button"
                         onClick={() => handleStatusChange(s.id, 'KELDI')}
-                        className={`py-1.5 px-2 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+                        className={`py-1.5 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer ${
                           currentStatus === 'KELDI'
-                            ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 scale-102'
+                            ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
                             : 'bg-gray-100 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700'
                         }`}
                       >
@@ -225,9 +218,9 @@ export default function StarssaAttendance() {
                       <button
                         type="button"
                         onClick={() => handleStatusChange(s.id, 'KECHIKIB_KELDI')}
-                        className={`py-1.5 px-2 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+                        className={`py-1.5 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer ${
                           currentStatus === 'KECHIKIB_KELDI'
-                            ? 'bg-amber-500 text-white shadow-sm shadow-amber-500/30 scale-102'
+                            ? 'bg-amber-500 text-white shadow-sm shadow-amber-500/30'
                             : 'bg-gray-100 text-gray-600 hover:bg-amber-50 hover:text-amber-700'
                         }`}
                       >
@@ -237,9 +230,9 @@ export default function StarssaAttendance() {
                       <button
                         type="button"
                         onClick={() => handleStatusChange(s.id, 'UZR_LI')}
-                        className={`py-1.5 px-2 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+                        className={`py-1.5 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer ${
                           currentStatus === 'UZR_LI'
-                            ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30 scale-102'
+                            ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
                             : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-700'
                         }`}
                       >
@@ -249,9 +242,9 @@ export default function StarssaAttendance() {
                       <button
                         type="button"
                         onClick={() => handleStatusChange(s.id, 'KELMADI')}
-                        className={`py-1.5 px-2 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+                        className={`py-1.5 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer ${
                           currentStatus === 'KELMADI'
-                            ? 'bg-rose-600 text-white shadow-sm shadow-rose-600/30 scale-102'
+                            ? 'bg-rose-600 text-white shadow-sm shadow-rose-600/30'
                             : 'bg-gray-100 text-gray-600 hover:bg-rose-50 hover:text-rose-700'
                         }`}
                       >
@@ -267,13 +260,13 @@ export default function StarssaAttendance() {
                         {currentStatus === 'KECHIKIB_KELDI' ? 'Kechikish vaqti:' : currentStatus === 'UZR_LI' ? 'Sababi:' : 'Izoh:'}
                       </span>
                       <input 
-                        type={currentStatus === 'KECHIKIB_KELDI' ? 'text' : 'text'}
+                        type="text"
                         placeholder={
                           currentStatus === 'KECHIKIB_KELDI' 
                             ? 'Masalan: 08:35' 
                             : currentStatus === 'UZR_LI'
-                            ? 'Sababini yozing (masalan: Shamollagan, shifokorda)...'
-                            : 'Kelmadi sababi (masalan: Sababsiz)...'
+                            ? 'Sababini yozing (masalan: kasal)...'
+                            : 'Kelmadi sababi (masalan: sababsiz)...'
                         }
                         value={currentNote}
                         onChange={(e) => handleNoteChange(s.id, e.target.value)}
@@ -284,6 +277,24 @@ export default function StarssaAttendance() {
                 </div>
               );
             })}
+
+            {/* O'quvchilar ro'yxati oxiridagi Tasdiqlashga yuborish tugmasi */}
+            <div className="pt-6 pb-12 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm mt-4">
+              <div>
+                <h4 className="font-bold text-slate-800 text-base">Davomatni yakunlash</h4>
+                <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                  Barcha o'quvchilar belgilanganini tekshirib, tasdiqlash uchun yuboring.
+                </p>
+              </div>
+              <button 
+                type="button"
+                onClick={handleSubmit} 
+                disabled={submitting || loading}
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-600/30 active:scale-95 transition-all text-base disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {submitting ? 'Yuborilmoqda...' : 'Tasdiqlash uchun yuborish ➔'}
+              </button>
+            </div>
           </div>
         )}
       </div>

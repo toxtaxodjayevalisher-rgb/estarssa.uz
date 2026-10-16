@@ -8,15 +8,20 @@ export async function GET(req: Request) {
 
   try {
     const where: any = { status: 'APPROVED' };
-    // Ustoz va Starssa faqat o'z guruhini ko'radi
     if ((auth.role.toUpperCase() === 'USTOZ' || auth.role.toUpperCase() === 'STARSSA') && auth.assigned_group) {
-      where.group_name = auth.assigned_group;
+      where.OR = [
+        { group_name: auth.assigned_group },
+        { group_name: 'Barchasi' }
+      ];
     }
 
     const sessions = await prisma.attendanceSession.findMany({
       where,
       include: {
-        records: { include: { student: true } }
+        records: { 
+          include: { student: true },
+          orderBy: { student: { full_name: 'asc' } }
+        }
       },
       orderBy: { date: 'desc' }
     });

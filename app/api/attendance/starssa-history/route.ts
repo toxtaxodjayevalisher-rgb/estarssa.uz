@@ -7,18 +7,21 @@ export async function GET(req: Request) {
   if (!auth) return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 401 });
 
   try {
-    // Filter by role
     const where: any = {};
-    if (auth.role.toUpperCase() === 'USTOZ' && auth.assigned_group) {
-      where.group_name = auth.assigned_group;
-    } else if (auth.role.toUpperCase() === 'STARSSA' && auth.assigned_group) {
-      where.group_name = auth.assigned_group;
+    if (auth.assigned_group) {
+      where.OR = [
+        { group_name: auth.assigned_group },
+        { group_name: 'Barchasi' }
+      ];
     }
 
     const sessions = await prisma.attendanceSession.findMany({
       where,
       include: {
-        records: { include: { student: true } }
+        records: { 
+          include: { student: true },
+          orderBy: { student: { full_name: 'asc' } }
+        }
       },
       orderBy: { date: 'desc' }
     });

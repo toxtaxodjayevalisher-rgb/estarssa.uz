@@ -5,19 +5,26 @@ import { verifyAuth } from '@/lib/auth';
 export async function GET() {
   const auth = await verifyAuth();
   if (!auth) return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 401 });
-  if (auth.role.toUpperCase() !== 'USTOZ') return NextResponse.json({ error: "Faqat USTOZ uchun" }, { status: 403 });
+  if (auth.role.toUpperCase() !== 'USTOZ' && auth.role.toUpperCase() !== 'ADMIN') {
+    return NextResponse.json({ error: "Faqat USTOZ yoki ADMIN uchun" }, { status: 403 });
+  }
 
   try {
-    // Ustoz faqat o'z guruhining davomatlarini ko'radi
     const where: any = { status: 'SENT_FOR_APPROVAL' };
     if (auth.assigned_group) {
-      where.group_name = auth.assigned_group;
+      where.OR = [
+        { group_name: auth.assigned_group },
+        { group_name: 'Barchasi' }
+      ];
     }
 
     const sessions = await prisma.attendanceSession.findMany({
       where,
       include: {
-        records: { include: { student: true } }
+        records: { 
+          include: { student: true },
+          orderBy: { student: { full_name: 'asc' } }
+        }
       },
       orderBy: { date: 'desc' }
     });
@@ -29,7 +36,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const auth = await verifyAuth();
-  if (!auth || auth.role.toUpperCase() !== 'USTOZ') return NextResponse.json({ error: "Faqat USTOZ uchun" }, { status: 403 });
+  if (!auth || (auth.role.toUpperCase() !== 'USTOZ' && auth.role.toUpperCase() !== 'ADMIN')) {
+    return NextResponse.json({ error: "Faqat USTOZ yoki ADMIN uchun" }, { status: 403 });
+  }
 
   try {
     const { session_id, action } = await req.json();

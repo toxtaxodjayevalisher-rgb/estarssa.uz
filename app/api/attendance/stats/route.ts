@@ -7,23 +7,41 @@ export async function GET() {
   if (!auth) return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 401 });
 
   try {
-    // Bugungi sana (00:00 dan boshlab)
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const where: any = {
+      date: {
+        gte: startOfDay,
+        lte: endOfDay
+      }
+    };
+
+    if (auth.assigned_group) {
+      where.OR = [
+        { group_name: auth.assigned_group },
+        { group_name: 'Barchasi' }
+      ];
+    }
 
     const session = await prisma.attendanceSession.findFirst({
-      where: { date: today },
+      where,
       include: {
         records: {
           include: { student: true }
         }
-      }
+      },
+      orderBy: { submitted_at: 'desc' }
     });
 
     if (!session) {
       return NextResponse.json({ 
         keldi: [], 
         kechikdi: [], 
+        sababli: [],
         kelmadi: [],
         status: 'Boshlanmagan'
       });
@@ -31,12 +49,15 @@ export async function GET() {
 
     const keldi = session.records.filter((r: any) => r.status === 'KELDI').map((r: any) => r.student);
     const kechikdi = session.records.filter((r: any) => r.status === 'KECHIKIB_KELDI').map((r: any) => r.student);
+    const sababli = session.records.filter((r: any) => r.status === 'UZR_LI').map((r: any) => r.student);
     const kelmadi = session.records.filter((r: any) => r.status === 'KELMADI').map((r: any) => r.student);
 
     return NextResponse.json({
       session_id: session.id,
+      group_name: session.group_name,
       keldi,
       kechikdi,
+      sababli,
       kelmadi,
       status: session.status
     });

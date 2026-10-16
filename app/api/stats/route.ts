@@ -4,7 +4,7 @@ import { verifyAuth } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
-    const user = verifyAuth();
+    const user = await verifyAuth();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const today = new Date();
@@ -15,8 +15,8 @@ export async function GET(request: Request) {
 
     // Get total students
     let studentsQuery: any = { status: 'ACTIVE' };
-    if (user.role === 'USTOZ' || user.role === 'STARSSA') {
-      studentsQuery.group_name = user.assigned_group || 'Hech qaysi';
+    if ((user.role === 'USTOZ' || user.role === 'STARSSA') && user.assigned_group) {
+      studentsQuery.group_name = user.assigned_group;
     }
     const totalStudents = await prisma.student.count({ where: studentsQuery });
 
@@ -24,8 +24,8 @@ export async function GET(request: Request) {
     let attendanceQuery: any = {
       date: { gte: sevenDaysAgo }
     };
-    if (user.role === 'USTOZ' || user.role === 'STARSSA') {
-      attendanceQuery.session = { group_name: user.assigned_group || 'Hech qaysi' };
+    if ((user.role === 'USTOZ' || user.role === 'STARSSA') && user.assigned_group) {
+      attendanceQuery.session = { group_name: user.assigned_group };
     }
 
     const recentAttendances = await prisma.attendance.findMany({
@@ -48,16 +48,18 @@ export async function GET(request: Request) {
 
     recentAttendances.forEach(att => {
       const dateStr = new Date(att.date).toISOString().split('T')[0];
+      const statusUpper = (att.status || '').toUpperCase();
+
       if (daysMap[dateStr]) {
-        if (att.status === 'Keldi') daysMap[dateStr].keldi++;
-        else if (att.status === 'Kelmadi') daysMap[dateStr].kelmadi++;
-        else if (att.status === 'Sababli') daysMap[dateStr].sababli++;
+        if (statusUpper === 'KELDI' || statusUpper === 'KECHIKIB_KELDI') daysMap[dateStr].keldi++;
+        else if (statusUpper === 'KELMADI') daysMap[dateStr].kelmadi++;
+        else if (statusUpper === 'UZR_LI' || statusUpper === 'SABABLI') daysMap[dateStr].sababli++;
       }
 
-      const gName = att.session.group_name;
+      const gName = att.session?.group_name || 'Boshqa';
       if (!groupsMap[gName]) groupsMap[gName] = { total: 0, keldi: 0 };
       groupsMap[gName].total++;
-      if (att.status === 'Keldi') groupsMap[gName].keldi++;
+      if (statusUpper === 'KELDI' || statusUpper === 'KECHIKIB_KELDI') groupsMap[gName].keldi++;
     });
 
     const chartData = Object.keys(daysMap).sort().map(date => ({

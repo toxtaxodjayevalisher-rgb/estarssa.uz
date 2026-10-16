@@ -6,6 +6,7 @@ type Student = { id: string, full_name: string, group_name: string };
 type StatsData = {
   keldi: Student[];
   kechikdi: Student[];
+  sababli?: Student[];
   kelmadi: Student[];
   status: string;
 };
@@ -70,7 +71,7 @@ export default function UstozDashboard() {
                 <p className="text-xl">Bugun hali davomat qilinmagan</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <div className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 border-l-4 border-green-500 transition">
                   <div className="p-6 cursor-pointer flex flex-col" onClick={() => setExpanded(prev => ({ ...prev, keldi: !prev.keldi }))}>
                     <h3 className="text-green-600 font-bold mb-2 flex justify-between items-center">
@@ -102,6 +103,24 @@ export default function UstozDashboard() {
                       <ul className="pt-2 text-sm space-y-2">
                         {stats.kechikdi.map(s => <li key={s.id} className="flex justify-between font-medium"><span>{s.full_name}</span> <span className="text-gray-400">{s.group_name}</span></li>)}
                         {stats.kechikdi.length === 0 && <li className="text-gray-400">Hech kim yo'q</li>}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-100 transition-all hover:shadow-xl hover:-translate-y-1 border-l-4 border-blue-500 transition">
+                  <div className="p-6 cursor-pointer flex flex-col" onClick={() => setExpanded(prev => ({ ...prev, sababli: !prev.sababli }))}>
+                    <h3 className="text-blue-600 font-bold mb-2 flex justify-between items-center">
+                      <span>🔵 Sababli</span>
+                      <span>{expanded.sababli ? '▲' : '▼'}</span>
+                    </h3>
+                    <p className="text-3xl font-bold">{(stats.sababli || []).length} <span className="text-sm text-gray-400 font-normal">ta o'quvchi</span></p>
+                  </div>
+                  {expanded.sababli && (
+                    <div className="px-6 pb-6 border-t mt-2">
+                      <ul className="pt-2 text-sm space-y-2">
+                        {(stats.sababli || []).map(s => <li key={s.id} className="flex justify-between font-medium"><span>{s.full_name}</span> <span className="text-gray-400">{s.group_name}</span></li>)}
+                        {(!stats.sababli || stats.sababli.length === 0) && <li className="text-gray-400">Hech kim yo'q</li>}
                       </ul>
                     </div>
                   )}

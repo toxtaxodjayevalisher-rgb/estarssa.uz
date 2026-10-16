@@ -40,26 +40,33 @@ export async function POST(req: Request) {
       
       if (sessionData) {
         const msg = `⚠️ <b>DIQQAT! Davomat bekor qilindi!</b>\n\n👤 Bekor qilgan xodim (login): <b>${auth.username}</b>\n\n⏳ 5 daqiqa ichida qayta davomat qilishi lozim!`;
-          await sendTelegramMessage(msg);
+        await sendTelegramMessage(msg);
       }
       
       return NextResponse.json({ success: true });
     }
 
     const { date, group_name, records, submit } = data;
+    const finalGroupName = (group_name && group_name !== 'Barchasi') ? group_name : (auth.assigned_group || 'IG2-26');
 
     const sessionDate = new Date(date);
-    sessionDate.setHours(0, 0, 0, 0);
+    const dayStart = new Date(sessionDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(sessionDate);
+    dayEnd.setHours(23, 59, 59, 999);
 
     let session = await prisma.attendanceSession.findFirst({
-      where: { date: sessionDate, group_name }
+      where: { 
+        date: { gte: dayStart, lte: dayEnd },
+        group_name: finalGroupName
+      }
     });
 
     if (!session) {
       session = await prisma.attendanceSession.create({
         data: {
-          date: sessionDate,
-          group_name,
+          date: dayStart,
+          group_name: finalGroupName,
           created_by_id: auth.id,
           status: submit ? 'SENT_FOR_APPROVAL' : 'DRAFT',
           submitted_at: submit ? new Date() : null
@@ -88,45 +95,53 @@ export async function POST(req: Request) {
 
     if (submit) {
       const totalStudents = records.length;
-      const presentOrLate = records.filter(r => r.status === 'KELDI' || r.status === 'KECHIKIB_KELDI').length;
+      const presentOrLate = records.filter((r: any) => r.status === 'KELDI' || r.status === 'KECHIKIB_KELDI').length;
       const percent = totalStudents > 0 ? Math.round((presentOrLate / totalStudents) * 100) : 0;
       
-      const absentees = records.filter(r => r.status === 'KELMADI');
-      const lates = records.filter(r => r.status === 'KECHIKIB_KELDI');
+      const absentees = records.filter((r: any) => r.status === 'KELMADI');
+      const uzrlilar = records.filter((r: any) => r.status === 'UZR_LI');
+      const lates = records.filter((r: any) => r.status === 'KECHIKIB_KELDI');
 
-      const studentIds = records.map(r => r.student_id);
+      const studentIds = records.map((r: any) => r.student_id);
       const dbStudents = await prisma.student.findMany({ where: { id: { in: studentIds } }, include: { attendances: true } });
-      const studentMap = {};
-      dbStudents.forEach(s => studentMap[s.id] = s);
+      const studentMap: Record<string, any> = {};
+      dbStudents.forEach(s => { studentMap[s.id] = s; });
 
-      const dateStr = new Date(date).toLocaleDateString();
+      const dateStr = new Date(date).toLocaleDateString('uz-UZ');
 
-      // Kelmaganlar bloki
+      // Sababsiz kelmaganlar
       let absenteesBlock = '';
       if (absentees.length > 0) {
-        const list = absentees.map(r => `- ${studentMap[r.student_id]?.full_name}: ${r.note || 'Sababsiz'}`).join('\n');
-        absenteesBlock = `\nKelmaganlar: ${absentees.length} ta\nSababi:\n${list}`;
+        const list = absentees.map((r: any) => `- ${studentMap[r.student_id]?.full_name || "O'quvchi"}: ${r.note || 'Sababsiz'}`).join('\n');
+        absenteesBlock = `\nSababsiz kelmaganlar: ${absentees.length} ta\n${list}`;
       }
 
-      // Kech qolganlar bloki (faqat ustoz uchun)
+      // Sababli kelmaganlar (UZR_LI)
+      let uzrlilarBlock = '';
+      if (uzrlilar.length > 0) {
+        const list = uzrlilar.map((r: any) => `- ${studentMap[r.student_id]?.full_name || "O'quvchi"}: ${r.note || 'Sababli'}`).join('\n');
+        uzrlilarBlock = `\nSababli (uzrli): ${uzrlilar.length} ta\n${list}`;
+      }
+
+      // Kech qolganlar
       let latesBlock = '';
       if (lates.length > 0) {
-        const list = lates.map(r => `- ${studentMap[r.student_id]?.full_name}: ${r.note || 'Soati kiritilmagan'}`).join('\n');
-        latesBlock = `\nKech qolgan o'quvchilar: ${lates.length} ta\nVaqti:\n${list}`;
+        const list = lates.map((r: any) => `- ${studentMap[r.student_id]?.full_name || "O'quvchi"}: ${r.note || 'Soati kiritilmagan'}`).join('\n');
+        latesBlock = `\nKech qolganlar: ${lates.length} ta\n${list}`;
       }
 
-      // Qoidabuzarlar (faqat ustoz uchun)
+      // Qoidabuzarlar (faqat KELMADI va KECHIKIB_KELDI hisoblanadi, UZR_LI qoidabuzar emas)
       const qoidabuzarlar = dbStudents.filter(s => {
         const h = s.attendances.filter(a => a.status === 'KELMADI' || a.status === 'KECHIKIB_KELDI').length;
         return h >= 2;
       });
       let qoidabuzarText = '';
-      if(qoidabuzarlar.length > 0) {
-        qoidabuzarText = '\n\nKimlar nechchi marotaba qoidalarni buzmoqda:\n' + qoidabuzarlar.map(s => `- ${s.full_name}`).join('\n');
+      if (qoidabuzarlar.length > 0) {
+        qoidabuzarText = '\n\nDoimiy qoidabuzarlar:\n' + qoidabuzarlar.map(s => `- ${s.full_name}`).join('\n');
       }
 
-      const groupMsg = `Assalomu aleykum\n${dateStr}\n${group_name}\nDavomat: ${percent}%${absenteesBlock}`;
-      const ustozMsg = `Assalomu aleykum ustoz\n${dateStr}\n${group_name}\nDavomat: ${percent}%${absenteesBlock}\n${latesBlock}${qoidabuzarText}`;
+      const groupMsg = `Assalomu aleykum\n${dateStr}\n${finalGroupName} guruhi\nDavomat: ${percent}%${absenteesBlock}${uzrlilarBlock}`;
+      const ustozMsg = `Assalomu aleykum ustoz\n${dateStr}\n${finalGroupName} guruhi\nDavomat: ${percent}%${absenteesBlock}${uzrlilarBlock}\n${latesBlock}${qoidabuzarText}`;
 
       try {
         const token = process.env.TELEGRAM_BOT_TOKEN || '8983797302:AAHrMF0yZQ0qOgRGgE96SL6nV5hMKPdD_p4';
@@ -141,7 +156,7 @@ export async function POST(req: Request) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ chat_id: '-5459131960', text: ustozMsg })
         });
-      } catch(e) { console.error(e); }
+      } catch(e) { console.error("Telegram xatosi:", e); }
     }
 
     return NextResponse.json({ success: true, session });

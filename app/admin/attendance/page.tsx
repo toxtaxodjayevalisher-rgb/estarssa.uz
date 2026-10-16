@@ -67,26 +67,35 @@ export default function AdminAttendance() {
   
   const exportToExcel = () => {
     const data: any[] = [];
+    let counter = 1;
     sessions.forEach(s => {
+      const dateFormatted = new Date(s.date).toLocaleDateString('uz-UZ');
       if (s.records && s.records.length > 0) {
         s.records.forEach((r: any) => {
+          let statusText = 'Keldi';
+          if (r.status === 'KECHIKIB_KELDI') statusText = 'Kechikdi';
+          else if (r.status === 'UZR_LI' || r.status === 'SABABLI') statusText = 'Sababli';
+          else if (r.status === 'KELMADI') statusText = 'Kelmadi';
+
           data.push({
-            'Sana': new Date(s.date).toLocaleDateString(),
+            '#': counter++,
+            'Sana': dateFormatted,
             'Guruh': s.group_name,
             "O'quvchi F.I.SH.": r.student?.full_name || "Noma'lum",
-            'Holati': r.status === 'KELDI' || r.status === 'Keldi' ? 'Keldi' : r.status === 'KELMADI' || r.status === 'Kelmadi' ? 'Kelmadi' : 'Sababli',
-            'Izoh': r.note || '',
-            'Tasdiqlangan': s.status === 'APPROVED' ? 'Tasdiqlangan' : s.status === 'HOLIDAY' ? 'Bayram' : 'Kutilyapti'
+            'Holati': statusText,
+            'Izoh / Vaqti': r.note || '-',
+            'Tasdiqlash holati': s.status === 'APPROVED' ? 'Tasdiqlangan' : s.status === 'HOLIDAY' ? 'Bayram' : 'Kutilmoqda'
           });
         });
       } else {
          data.push({
-            'Sana': new Date(s.date).toLocaleDateString(),
+            '#': counter++,
+            'Sana': dateFormatted,
             'Guruh': s.group_name,
             "O'quvchi F.I.SH.": '-',
-            'Holati': s.status === 'HOLIDAY' ? 'Bayram/Dam olish' : s.status,
-            'Izoh': '-',
-            'Tasdiqlangan': '-'
+            'Holati': s.status === 'HOLIDAY' ? 'Bayram / Dam olish' : s.status,
+            'Izoh / Vaqti': '-',
+            'Tasdiqlash holati': s.status === 'HOLIDAY' ? 'Bayram' : s.status
          });
       }
     });
@@ -96,7 +105,7 @@ export default function AdminAttendance() {
     }
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Davomat");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Davomat Hisoboti");
     XLSX.writeFile(workbook, "Davomat_Hisoboti.xlsx");
   };
 
@@ -227,9 +236,10 @@ export default function AdminAttendance() {
                       <tr key={r.id}>
                         <td className="px-4 py-3 font-medium text-gray-800">{r.student.full_name}</td>
                         <td className="px-4 py-3">
-                          {r.status === 'KELDI' && <span className="px-2 py-1 bg-green-100 text-green-700 font-bold rounded-lg text-xs">Keldi</span>}
-                          {r.status === 'KELMADI' && <span className="px-2 py-1 bg-red-100 text-red-700 font-bold rounded-lg text-xs">Kelmadi</span>}
-                          {r.status === 'SABABLI' && <span className="px-2 py-1 bg-yellow-100 text-yellow-700 font-bold rounded-lg text-xs">Sababli</span>}
+                          {r.status === 'KELDI' && <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-lg text-xs">Keldi</span>}
+                          {r.status === 'KECHIKIB_KELDI' && <span className="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold rounded-lg text-xs">Kechikdi</span>}
+                          {(r.status === 'UZR_LI' || r.status === 'SABABLI') && <span className="px-2.5 py-1 bg-blue-100 text-blue-800 font-bold rounded-lg text-xs">Sababli</span>}
+                          {r.status === 'KELMADI' && <span className="px-2.5 py-1 bg-rose-100 text-rose-800 font-bold rounded-lg text-xs">Kelmadi</span>}
                         </td>
                         <td className="px-4 py-3 text-gray-500 text-xs">{r.note || '-'}</td>
                       </tr>

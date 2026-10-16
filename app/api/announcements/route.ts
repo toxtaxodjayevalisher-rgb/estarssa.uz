@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { verifyAuth } from '@/lib/auth';
 import { sendTelegramMessage, sendTelegramPhoto } from '@/lib/telegram';
-
-const prisma = new PrismaClient();
 
 export async function GET() {
   try {
@@ -25,16 +23,19 @@ export async function POST(req: Request) {
     if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const formData = await req.formData();
-    const title = formData.get('title') as string;
-    const content = formData.get('content') as string;
+    const title = (formData.get('title') as string || '').trim();
+    const content = (formData.get('content') as string || '').trim();
     const image = formData.get('image') as File | null;
 
     if (!title || !content) {
       return NextResponse.json({ error: 'Sarlavha va matn kiritilishi shart' }, { status: 400 });
     }
 
+    const senderTitle = auth.role === 'ADMIN' ? 'Administrator' : auth.role === 'USTOZ' ? 'Ustoz' : 'Starssa';
+    const senderName = auth.full_name || auth.username || senderTitle;
+    const caption = `📢 <b>DIQQAT E'LON: ${title}</b>\n\n${content}\n\n✍️ <i>Yuboruvchi: ${senderName} (${senderTitle})</i>`;
+
     let imageUrl = null;
-    let caption = `📢 E'LON: ${title}\\n\\n${content}\\n\\n✍️ Yuboruvchi: ${auth.role}`;
     let msgIds: any = [];
 
     if (image && image.size > 0) {
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
         title,
         content,
         image_url: imageUrl,
-        created_by: auth.role,
+        created_by: `${senderName} (${senderTitle})`,
         telegram_msg_ids: JSON.stringify(msgIds)
       }
     });

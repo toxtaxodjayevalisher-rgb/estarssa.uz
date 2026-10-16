@@ -148,17 +148,17 @@ export default function AnnouncementsClient({ role }: { role: string }) {
                 <Image src={a.image_url} alt="E'lon rasmi" fill className="object-cover" />
               </div>
             )}
-            <div className="flex justify-between items-center mt-4">
-              <div className="text-sm text-gray-400">
-                {new Date(a.created_at).toLocaleString('uz-UZ')}
+            <div className="flex justify-between items-center mt-4 pt-3 border-t border-slate-100">
+              <div suppressHydrationWarning className="text-xs sm:text-sm text-slate-400 font-medium">
+                📅 {new Date(a.created_at).toLocaleString('uz-UZ')}
               </div>
               
               {(role === 'ADMIN' || role === 'USTOZ') && (
                 <button 
                   onClick={() => deleteAnnouncement(a.id)} 
-                  className="text-red-500 hover:text-red-700 text-sm font-bold bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all"
+                  className="text-rose-600 hover:text-rose-800 text-xs sm:text-sm font-bold bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl transition-all cursor-pointer active:scale-95"
                 >
-                  O'chirish
+                  🗑️ O'chirish
                 </button>
               )}
             </div>

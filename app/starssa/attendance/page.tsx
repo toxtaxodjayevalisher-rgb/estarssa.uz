@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { formatUzDateShort } from '@/lib/date';
+import DashboardLayout from '@/app/components/DashboardLayout';
 
 type Student = { id: string, full_name: string, group_name: string };
 type AttendanceStatus = 'KELDI' | 'KECHIKIB_KELDI' | 'UZR_LI' | 'KELMADI';
@@ -155,31 +156,25 @@ export default function StarssaAttendance() {
   const isLocked = sessionStatus === 'SENT_FOR_APPROVAL' || sessionStatus === 'APPROVED';
 
   return (
-    <div className="flex flex-col md:flex-row h-[100dvh] bg-slate-50 overflow-hidden font-sans">
-      <div className="w-full md:w-64 bg-[#0a1128] text-white shadow-2xl z-20 flex flex-col flex-shrink-0">
-        <div className="p-6 text-2xl font-bold border-b border-slate-700 text-center tracking-wider text-white">E-STARSSA</div>
-        <nav className="flex md:flex-col overflow-x-auto md:overflow-visible p-3 md:p-4 space-x-2 md:space-x-0 md:space-y-2 border-b md:border-none border-slate-800">
-          <Link href="/starssa" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium">Asosiy</Link>
-          <Link href="/starssa/students" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium">O'quvchilar</Link>
-          <Link href="/starssa/attendance" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/30 font-bold text-white">Davomat Qilish</Link>
-          <Link href="/starssa/history" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium">Davomat Tarixi</Link>
-          <Link href="/starssa/homework" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium">Uyga Vazifa</Link>
-          <Link href="/starssa/announcements" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium">E'lonlar</Link>
-        </nav>
-        <div className="p-4 mt-auto border-t border-slate-800 hidden md:block">
-          <Link href="/logout" className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-600 px-4 py-2.5 rounded-xl text-red-500 hover:text-white font-semibold transition-all">
-            Chiqish
-          </Link>
-        </div>
-      </div>
-
-      <div className="flex-1 p-3 sm:p-6 md:p-8 overflow-y-auto text-slate-800 relative w-full">
+    <DashboardLayout role="STARSSA">
+      <div className="max-w-4xl mx-auto">
         {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 pb-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5 pb-4 border-b border-slate-200">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Bugungi Davomat</h1>
-            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-              Sana: <span suppressHydrationWarning className="font-semibold text-slate-700">{formatUzDateShort()}</span> | Guruh: <span className="font-semibold text-blue-600">{groupName}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xl sm:text-2xl">📋</span>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Bugungi Davomat</h1>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 flex flex-wrap items-center gap-2">
+              <span>Sana:</span>
+              <span suppressHydrationWarning className="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
+                {formatUzDateShort()}
+              </span>
+              <span>•</span>
+              <span>Guruh:</span>
+              <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                {groupName}
+              </span>
             </p>
           </div>
           {!isLocked && (
@@ -187,19 +182,23 @@ export default function StarssaAttendance() {
               <button 
                 type="button"
                 onClick={markAllPresent} 
-                className="text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-xl font-medium transition-all"
+                className="w-full sm:w-auto text-xs sm:text-sm bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                ✓ Barchani "Keldi" qilish
+                <span>✓</span>
+                <span>Barchani "Keldi" qilish</span>
               </button>
             </div>
           )}
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-gray-500 font-medium">Yuklanmoqda...</div>
+          <div className="p-16 text-center text-slate-500 font-medium flex flex-col items-center justify-center gap-3">
+            <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <span>O'quvchilar ro'yxati yuklanmoqda...</span>
+          </div>
         ) : isLocked ? (
           /* Agar davomat qilinib bo'lgan bo'lsa - Yopiladi va Bekor qilish tugmasi chiqadi */
-          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm max-w-xl mx-auto my-8 text-center animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm max-w-xl mx-auto my-6 text-center animate-in fade-in">
             <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl border border-amber-200 shadow-sm">
               🔒
             </div>
@@ -209,7 +208,7 @@ export default function StarssaAttendance() {
             <p className="text-sm sm:text-base text-slate-600 mb-6 leading-relaxed">
               Bugungi davomat ustozga jo'natilganligi sababli davomat qilish vaqtincha yopib qo'yildi.
               <br /><br />
-              <span className="text-rose-600 font-semibold block text-base">
+              <span className="text-rose-600 font-semibold block text-base bg-rose-50 p-3 rounded-xl border border-rose-200">
                 Davomat qilish uchun uni bekor qiling
               </span>
             </p>
@@ -218,13 +217,13 @@ export default function StarssaAttendance() {
                 type="button"
                 onClick={handleCancelAttendance}
                 disabled={reverting}
-                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white font-bold px-6 py-3 rounded-xl shadow-md shadow-rose-600/20 active:scale-95 transition-all text-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white font-bold px-6 py-3.5 rounded-xl shadow-md shadow-rose-600/20 active:scale-95 transition-all text-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {reverting ? 'Bekor qilinmoqda...' : '⚠️ Davomatni bekor qilish va qaytadan qilish'}
               </button>
               <Link
                 href="/starssa"
-                className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-6 py-3 rounded-xl transition-all text-sm text-center"
+                className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-6 py-3.5 rounded-xl transition-all text-sm text-center"
               >
                 Asosiy sahifaga qaytish
               </Link>
@@ -235,25 +234,25 @@ export default function StarssaAttendance() {
           <div>
             {/* Live Counters */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mb-5">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-                <span className="text-xs font-semibold text-emerald-700">🟢 Keldi</span>
-                <p className="text-xl sm:text-2xl font-bold text-emerald-800">{counts.keldi}</p>
+              <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-2xl p-3 sm:p-4 text-center shadow-xs">
+                <span className="text-xs font-bold text-emerald-700 flex items-center justify-center gap-1">🟢 Keldi</span>
+                <p className="text-2xl sm:text-3xl font-extrabold text-emerald-800 mt-1">{counts.keldi}</p>
               </div>
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
-                <span className="text-xs font-semibold text-amber-700">🟡 Kechikdi</span>
-                <p className="text-xl sm:text-2xl font-bold text-amber-800">{counts.kechikdi}</p>
+              <div className="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-3 sm:p-4 text-center shadow-xs">
+                <span className="text-xs font-bold text-amber-700 flex items-center justify-center gap-1">🟡 Kechikdi</span>
+                <p className="text-2xl sm:text-3xl font-extrabold text-amber-800 mt-1">{counts.kechikdi}</p>
               </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-                <span className="text-xs font-semibold text-blue-700">🔵 Sababli</span>
-                <p className="text-xl sm:text-2xl font-bold text-blue-800">{counts.uzrli}</p>
+              <div className="bg-blue-50/80 border border-blue-200/80 rounded-2xl p-3 sm:p-4 text-center shadow-xs">
+                <span className="text-xs font-bold text-blue-700 flex items-center justify-center gap-1">🔵 Sababli</span>
+                <p className="text-2xl sm:text-3xl font-extrabold text-blue-800 mt-1">{counts.uzrli}</p>
               </div>
-              <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-center">
-                <span className="text-xs font-semibold text-rose-700">🔴 Kelmadi</span>
-                <p className="text-xl sm:text-2xl font-bold text-rose-800">{counts.kelmadi}</p>
+              <div className="bg-rose-50/80 border border-rose-200/80 rounded-2xl p-3 sm:p-4 text-center shadow-xs">
+                <span className="text-xs font-bold text-rose-700 flex items-center justify-center gap-1">🔴 Kelmadi</span>
+                <p className="text-2xl sm:text-3xl font-extrabold text-rose-800 mt-1">{counts.kelmadi}</p>
               </div>
             </div>
 
-            <div className="space-y-2.5 pb-8">
+            <div className="space-y-3 pb-8">
               {students.map((s, idx) => {
                 const currentStatus = attendance[s.id]?.status || 'KELDI';
                 const currentNote = attendance[s.id]?.note || '';
@@ -261,87 +260,91 @@ export default function StarssaAttendance() {
                 return (
                   <div 
                     key={s.id} 
-                    className={`p-3.5 sm:p-4 rounded-2xl bg-white border transition-all shadow-sm ${
+                    className={`p-3.5 sm:p-4 rounded-2xl bg-white border transition-all duration-150 shadow-sm ${
                       currentStatus === 'KELDI' 
-                        ? 'border-gray-200 hover:border-emerald-300' 
+                        ? 'border-slate-200 hover:border-emerald-300' 
                         : currentStatus === 'KECHIKIB_KELDI'
-                        ? 'border-amber-300 bg-amber-50/30'
+                        ? 'border-amber-300 bg-amber-50/20'
                         : currentStatus === 'UZR_LI'
-                        ? 'border-blue-300 bg-blue-50/30'
-                        : 'border-rose-300 bg-rose-50/30'
+                        ? 'border-blue-300 bg-blue-50/20'
+                        : 'border-rose-300 bg-rose-50/20'
                     }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       {/* Student Info */}
-                      <div className="flex items-center gap-3">
-                        <span className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 font-bold text-xs">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 font-extrabold text-xs">
                           {idx + 1}
                         </span>
-                        <div>
-                          <h3 className="font-bold text-slate-800 text-sm sm:text-base leading-snug">
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-slate-900 text-sm sm:text-base leading-snug truncate">
                             {s.full_name}
                           </h3>
-                          <span className="text-xs text-gray-400 font-medium">{s.group_name}</span>
+                          <span className="text-xs text-slate-400 font-medium">{s.group_name}</span>
                         </div>
                       </div>
 
-                      {/* Action Buttons */}
+                      {/* Action Buttons: 4 tactile buttons designed for thumb tap */}
                       <div className="grid grid-cols-4 sm:flex items-center gap-1.5 sm:gap-2">
                         <button
                           type="button"
                           onClick={() => handleStatusChange(s.id, 'KELDI')}
-                          className={`py-1.5 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                          className={`h-10 sm:h-9 px-2 sm:px-3.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-1 ${
                             currentStatus === 'KELDI'
-                              ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
-                              : 'bg-gray-100 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700'
+                              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 ring-2 ring-emerald-600/30'
+                              : 'bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'
                           }`}
                         >
-                          Keldi
+                          <span>✓</span>
+                          <span>Keldi</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleStatusChange(s.id, 'KECHIKIB_KELDI')}
-                          className={`py-1.5 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                          className={`h-10 sm:h-9 px-2 sm:px-3.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-1 ${
                             currentStatus === 'KECHIKIB_KELDI'
-                              ? 'bg-amber-500 text-white shadow-sm shadow-amber-500/30'
-                              : 'bg-gray-100 text-gray-600 hover:bg-amber-50 hover:text-amber-700'
+                              ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30 ring-2 ring-amber-500/30'
+                              : 'bg-slate-100 text-slate-600 hover:bg-amber-50 hover:text-amber-700'
                           }`}
                         >
-                          Kechikdi
+                          <span>⏱</span>
+                          <span>Kechikdi</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleStatusChange(s.id, 'UZR_LI')}
-                          className={`py-1.5 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                          className={`h-10 sm:h-9 px-2 sm:px-3.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-1 ${
                             currentStatus === 'UZR_LI'
-                              ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
-                              : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-700'
+                              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 ring-2 ring-blue-600/30'
+                              : 'bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-700'
                           }`}
                         >
-                          Sababli
+                          <span>🏥</span>
+                          <span>Sababli</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleStatusChange(s.id, 'KELMADI')}
-                          className={`py-1.5 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer ${
+                          className={`h-10 sm:h-9 px-2 sm:px-3.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-1 ${
                             currentStatus === 'KELMADI'
-                              ? 'bg-rose-600 text-white shadow-sm shadow-rose-600/30'
-                              : 'bg-gray-100 text-gray-600 hover:bg-rose-50 hover:text-rose-700'
+                              ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 ring-2 ring-rose-600/30'
+                              : 'bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700'
                           }`}
                         >
-                          Kelmadi
+                          <span>✕</span>
+                          <span>Kelmadi</span>
                         </button>
                       </div>
                     </div>
 
                     {/* Note input if not present */}
                     {currentStatus !== 'KELDI' && (
-                      <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-500 whitespace-nowrap">
-                          {currentStatus === 'KECHIKIB_KELDI' ? 'Kechikish vaqti:' : currentStatus === 'UZR_LI' ? 'Sababi:' : 'Izoh:'}
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2">
+                        <span className="text-xs font-bold text-slate-600 whitespace-nowrap flex items-center gap-1">
+                          {currentStatus === 'KECHIKIB_KELDI' ? '⏱ Kechikish vaqti:' : currentStatus === 'UZR_LI' ? '🏥 Sababi:' : '✕ Izoh:'}
                         </span>
                         <input 
                           type="text"
@@ -354,7 +357,7 @@ export default function StarssaAttendance() {
                           }
                           value={currentNote}
                           onChange={(e) => handleNoteChange(s.id, e.target.value)}
-                          className="flex-1 bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-xs sm:text-sm text-slate-800 outline-none focus:ring-1 focus:ring-blue-500"
+                          className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-800 outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                         />
                       </div>
                     )}
@@ -363,10 +366,12 @@ export default function StarssaAttendance() {
               })}
 
               {/* O'quvchilar ro'yxati oxiridagi Tasdiqlashga yuborish tugmasi */}
-              <div className="pt-6 pb-12 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm mt-4">
+              <div className="pt-6 pb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm mt-4">
                 <div>
-                  <h4 className="font-bold text-slate-800 text-base">Davomatni yakunlash</h4>
-                  <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+                  <h4 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
+                    <span>🚀</span> Davomatni yakunlash
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                     Barcha o'quvchilar belgilanganini tekshirib, tasdiqlash uchun yuboring.
                   </p>
                 </div>
@@ -374,15 +379,25 @@ export default function StarssaAttendance() {
                   type="button"
                   onClick={handleSubmit} 
                   disabled={submitting || loading}
-                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-600/30 active:scale-95 transition-all text-base disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-600/25 active:scale-95 transition-all text-base disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  {submitting ? 'Yuborilmoqda...' : 'Tasdiqlash uchun yuborish ➔'}
+                  {submitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Yuborilmoqda...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Tasdiqlash uchun yuborish</span>
+                      <span>➔</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
           </div>
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

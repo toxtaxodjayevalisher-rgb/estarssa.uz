@@ -1,6 +1,6 @@
 "use client";
-import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import DashboardLayout from '@/app/components/DashboardLayout';
 
 export default function HomeworkPage() {
   const [homeworks, setHomeworks] = useState<any[]>([]);
@@ -57,180 +57,182 @@ export default function HomeworkPage() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-[100dvh] bg-slate-50 overflow-hidden font-sans">
-      <div className="w-full md:w-64 bg-[#0a1128] text-white shadow-2xl z-20 flex flex-col flex-shrink-0">
-        <div className="p-6 text-2xl font-bold border-b border-slate-700 text-center tracking-wider text-white">E-STARSSA</div>
-        <nav className="flex md:flex-col overflow-x-auto md:overflow-visible p-3 md:p-4 space-x-2 md:space-x-0 md:space-y-2 border-b md:border-none border-slate-800">
-          <Link href="/starssa" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium">Asosiy</Link>
-          <Link href="/starssa/students" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium">O'quvchilar</Link>
-          <Link href="/starssa/attendance" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium">Davomat Qilish</Link>
-          <Link href="/starssa/history" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium">Davomat Tarixi</Link>
-          <Link href="/starssa/homework" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-500/30 font-bold text-white">Uyga Vazifa</Link>
-          <Link href="/starssa/announcements" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium">E'lonlar</Link>
-        </nav>
-        <div className="p-4 mt-auto border-t border-slate-800 hidden md:block">
-          <Link href="/logout" className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-600 px-4 py-2.5 rounded-xl text-red-500 hover:text-white font-semibold transition-all">
-            Chiqish
-          </Link>
+    <DashboardLayout role="STARSSA">
+      <div className="max-w-3xl mx-auto space-y-6 pb-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            <span>📚</span> Uyga Vazifalar
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Yangi topshiriq kiritish va o'quvchilarga jo'natish
+          </p>
         </div>
-      </div>
-
-      <div className="flex-1 p-4 md:p-8 overflow-y-auto text-slate-800 relative w-full">
-        <div className="max-w-3xl space-y-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Uyga Vazifalar</h1>
-            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Yangi topshiriq kiritish va o'quvchilarga jo'natish</p>
-          </div>
-          
-          <div className="bg-white p-5 sm:p-7 rounded-2xl shadow-sm border border-slate-200">
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-gray-100">
-              Yangi vazifa kiritish
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              
-              {/* Qator 1: Guruh nomi */}
+        
+        <div className="bg-white p-5 sm:p-7 rounded-2xl shadow-sm border border-slate-200">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+            <span>✏️</span> Yangi vazifa kiritish
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Guruh nomi & Sana */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">Guruh nomi *</label>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Guruh nomi *
+                </label>
                 <input 
                   required 
-                  className="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-medium" 
+                  className="w-full border border-slate-200 p-3 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition text-sm font-medium" 
                   placeholder="Masalan: IG2-26" 
                   value={group_name} 
                   onChange={e => setGroupName(e.target.value)} 
                 />
               </div>
 
-              {/* Qator 2: Qaysi kunga (Sana) */}
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">Qaysi kunga (Sana) *</label>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Qaysi kunga (Sana) *
+                </label>
                 <input 
                   type="date" 
                   required 
-                  className="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-medium" 
+                  className="w-full border border-slate-200 p-3 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition text-sm font-medium" 
                   value={date} 
                   onChange={e => setDate(e.target.value)} 
                 />
                 {date && (
-                  <p className="text-xs text-blue-600 font-semibold mt-1.5">
-                    Tanlangan kun: {new Date(date).toLocaleDateString('uz-UZ', {weekday: 'long', day: 'numeric', month: 'long'})}
+                  <p className="text-xs text-blue-600 font-semibold mt-1">
+                    Tanlangan kun: <span suppressHydrationWarning>{new Date(date).toLocaleDateString('uz-UZ', {weekday: 'long', day: 'numeric', month: 'long'})}</span>
                   </p>
                 )}
               </div>
-              
-              {/* Qator 3: Fanlar va vazifalar */}
-              <div className="pt-2">
-                <label className="block text-sm font-bold text-slate-700 mb-2">Fanlar va vazifalar matni *</label>
-                <div className="space-y-3">
-                  {tasks.map((task, index) => (
-                    <div key={index} className="bg-slate-50 p-4 rounded-xl border border-slate-200 relative space-y-3">
-                      {tasks.length > 1 && (
-                        <button 
-                          type="button" 
-                          onClick={() => {
-                            const newTasks = [...tasks];
-                            newTasks.splice(index, 1);
-                            setTasks(newTasks);
-                          }} 
-                          className="absolute top-3 right-3 text-rose-500 hover:text-rose-700 text-xs font-bold bg-white px-2 py-1 rounded-md border border-rose-200 shadow-sm"
-                        >
-                          ✕ O'chirish
-                        </button>
-                      )}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-600 mb-1">Fan nomi</label>
-                        <input 
-                          required 
-                          className="w-full border border-gray-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm" 
-                          placeholder="Masalan: Matematika" 
-                          value={task.subject} 
-                          onChange={e => {
-                            const newTasks = [...tasks];
-                            newTasks[index].subject = e.target.value;
-                            setTasks(newTasks);
-                          }} 
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-600 mb-1">Vazifa matni</label>
-                        <textarea 
-                          required 
-                          rows={3} 
-                          className="w-full border border-gray-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm" 
-                          placeholder="Uyga vazifani batafsil kiriting..." 
-                          value={task.content} 
-                          onChange={e => {
-                            const newTasks = [...tasks];
-                            newTasks[index].content = e.target.value;
-                            setTasks(newTasks);
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <button 
-                  type="button" 
-                  onClick={() => setTasks([...tasks, { subject: '', content: '' }])} 
-                  className="mt-3 text-xs sm:text-sm text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl px-4 py-2 transition-all flex items-center gap-1"
-                >
-                  + Yana boshqa fan qo'shish
-                </button>
-              </div>
-
-              {/* Qator 4: Rasm (ixtiyoriy) */}
-              <div className="pt-2">
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">Rasm (ixtiyoriy)</label>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={e => setImage(e.target.files ? e.target.files[0] : null)} 
-                  className="w-full border border-gray-200 p-2.5 rounded-xl bg-gray-50 focus:bg-white outline-none transition-all text-sm" 
-                />
-              </div>
-              
-              {/* Qator 5: Yuborish tugmasi */}
-              <div className="pt-2">
-                <button 
-                  type="submit" 
-                  disabled={loading} 
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold active:scale-95 transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 text-sm"
-                >
-                  {loading ? 'Yuborilmoqda...' : 'Saqlash va Telegramga yuborish'}
-                </button>
-              </div>
-            </form>
-          </div>
-
-          {/* Faol vazifalar ro'yxati */}
-          <div className="bg-white p-5 sm:p-7 rounded-2xl shadow-sm border border-slate-200">
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-gray-100">Faol vazifalar</h2>
-            <div className="space-y-4">
-              {homeworks.length === 0 ? (
-                <p className="text-gray-500 text-sm">Hozircha faol vazifalar yo'q.</p>
-              ) : (
-                homeworks.map((hw: any) => (
-                  <div key={hw.id} className="border border-slate-200 p-4 rounded-xl flex flex-col md:flex-row gap-4 bg-slate-50/50">
-                    {hw.image_url && (
-                      <img src={hw.image_url} alt="vazifa" className="w-full md:w-32 h-32 object-cover rounded-lg shadow-sm" />
+            </div>
+            
+            {/* Fanlar va vazifalar */}
+            <div className="pt-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                Fanlar va vazifalar matni *
+              </label>
+              <div className="space-y-3">
+                {tasks.map((task, index) => (
+                  <div key={index} className="bg-slate-50 p-4 rounded-xl border border-slate-200 relative space-y-3">
+                    {tasks.length > 1 && (
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          const newTasks = [...tasks];
+                          newTasks.splice(index, 1);
+                          setTasks(newTasks);
+                        }} 
+                        className="absolute top-3 right-3 text-rose-500 hover:text-rose-700 text-xs font-bold bg-white px-2.5 py-1 rounded-lg border border-rose-200 shadow-xs cursor-pointer"
+                      >
+                        ✕ O'chirish
+                      </button>
                     )}
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="font-bold text-base text-blue-900">{hw.group_name} - {hw.subject}</span>
-                        <span className="bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full text-xs font-bold">
-                          {new Date(hw.date).toLocaleDateString('uz-UZ')}
-                        </span>
-                      </div>
-                      <p className="text-slate-700 text-sm whitespace-pre-wrap">{hw.content}</p>
-                      <p className="text-xs text-gray-400 mt-2 font-medium">Kiritdi: {hw.created_by}</p>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 mb-1">Fan nomi</label>
+                      <input 
+                        required 
+                        className="w-full border border-slate-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none transition text-sm font-medium" 
+                        placeholder="Masalan: Matematika" 
+                        value={task.subject} 
+                        onChange={e => {
+                          const newTasks = [...tasks];
+                          newTasks[index].subject = e.target.value;
+                          setTasks(newTasks);
+                        }} 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 mb-1">Vazifa matni</label>
+                      <textarea 
+                        required 
+                        rows={3} 
+                        className="w-full border border-slate-200 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none transition text-sm" 
+                        placeholder="Uyga vazifani batafsil kiriting..." 
+                        value={task.content} 
+                        onChange={e => {
+                          const newTasks = [...tasks];
+                          newTasks[index].content = e.target.value;
+                          setTasks(newTasks);
+                        }} 
+                      />
                     </div>
                   </div>
-                ))
-              )}
+                ))}
+              </div>
+
+              <button 
+                type="button" 
+                onClick={() => setTasks([...tasks, { subject: '', content: '' }])} 
+                className="mt-3 text-xs sm:text-sm text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl px-4 py-2.5 transition flex items-center gap-1 active:scale-95 cursor-pointer"
+              >
+                + Yana boshqa fan qo'shish
+              </button>
             </div>
+
+            {/* Rasm (ixtiyoriy) */}
+            <div className="pt-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Rasm (ixtiyoriy)
+              </label>
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={e => setImage(e.target.files ? e.target.files[0] : null)} 
+                className="w-full border border-slate-200 p-2.5 rounded-xl bg-slate-50 focus:bg-white outline-none transition text-sm" 
+              />
+            </div>
+            
+            {/* Yuborish tugmasi */}
+            <div className="pt-3">
+              <button 
+                type="submit" 
+                disabled={loading} 
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-bold active:scale-95 transition shadow-lg shadow-blue-500/25 disabled:opacity-50 text-sm cursor-pointer flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Yuborilmoqda...</span>
+                  </>
+                ) : (
+                  <span>Saqlash va Telegramga yuborish ➔</span>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Faol vazifalar ro'yxati */}
+        <div className="bg-white p-5 sm:p-7 rounded-2xl shadow-sm border border-slate-200">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+            <span>📋</span> Faol vazifalar
+          </h2>
+          <div className="space-y-4">
+            {homeworks.length === 0 ? (
+              <p className="text-slate-400 text-sm py-4 text-center">Hozircha faol vazifalar yo'q.</p>
+            ) : (
+              homeworks.map((hw: any) => (
+                <div key={hw.id} className="border border-slate-200 p-4 rounded-2xl flex flex-col sm:flex-row gap-4 bg-slate-50/50 hover:bg-slate-50 transition">
+                  {hw.image_url && (
+                    <img src={hw.image_url} alt="vazifa" className="w-full sm:w-32 h-32 object-cover rounded-xl shadow-xs" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start gap-2 mb-2">
+                      <span className="font-bold text-base text-slate-900">{hw.group_name} - {hw.subject}</span>
+                      <span className="bg-amber-100 text-amber-900 border border-amber-200 px-2.5 py-0.5 rounded-full text-xs font-bold flex-shrink-0" suppressHydrationWarning>
+                        {new Date(hw.date).toLocaleDateString('uz-UZ')}
+                      </span>
+                    </div>
+                    <p className="text-slate-700 text-sm whitespace-pre-wrap leading-relaxed">{hw.content}</p>
+                    <p className="text-xs text-slate-400 mt-2 font-medium">Kiritdi: {hw.created_by}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

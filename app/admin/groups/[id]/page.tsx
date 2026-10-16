@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import DashboardLayout from '@/app/components/DashboardLayout';
 
 export default function GroupDetails() {
   const params = useParams();
@@ -22,7 +23,6 @@ export default function GroupDetails() {
 
   const fetchData = async () => {
     try {
-      // We need group name
       const gRes = await fetch('/api/groups');
       const allGroups = await gRes.json();
       const current = allGroups.find((g: any) => g.id === groupId);
@@ -94,46 +94,57 @@ export default function GroupDetails() {
     else alert("O'chirishda xatolik");
   };
 
-  if (loading) return <div className="p-8 text-center">Yuklanmoqda...</div>;
+  if (loading) return (
+    <DashboardLayout role="ADMIN">
+      <div className="p-16 text-center text-slate-500 font-medium">Yuklanmoqda...</div>
+    </DashboardLayout>
+  );
 
   const ustozlar = users.filter(u => u.role === 'USTOZ');
   const starssalar = users.filter(u => u.role === 'STARSSA');
 
   return (
-    <div className="flex flex-col md:flex-row h-[100dvh] bg-slate-50 overflow-hidden">
-      <div className="w-full md:w-64 bg-[#0a1128] text-white shadow-2xl z-20 flex flex-col flex-shrink-0">
-        <div className="p-6 text-3xl font-serif font-bold border-b border-slate-700 text-center tracking-wider text-white">E-STARSSA</div>
-        <nav className="flex md:flex-col overflow-x-auto md:overflow-visible p-3 md:p-4 space-x-2 md:space-x-0 md:space-y-2">
-          <Link href="/admin" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all">Asosiy</Link>
-          <Link href="/admin/students" className="block px-4 py-3 bg-blue-600 rounded-xl shadow-lg font-bold">O'quvchilar</Link>
-          <Link href="/admin/attendance" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all">Davomat</Link>
-          <Link href="/admin/users" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all">Akkauntlar</Link>
-          <Link href="/admin/announcements" className="block px-4 py-3 hover:bg-white/10 rounded-xl transition-all">E'lonlar</Link>
-            <Link href="/admin/ratings" className="block flex-shrink-0 whitespace-nowrap text-sm md:text-base px-4 py-3 hover:bg-white/10 rounded-xl transition-all text-gray-300 hover:text-white font-medium hover:translate-x-1">Reyting</Link>
-        </nav>
-      </div>
-
-      <div className="flex-1 p-4 md:p-8 overflow-y-auto text-black relative w-full">
-        <Link href="/admin/students" className="text-blue-600 hover:underline mb-4 inline-block">&larr; Guruhlar ro'yxatiga qaytish</Link>
-        <h1 className="text-3xl font-bold mb-6">{group?.name} guruhi boshqaruvi</h1>
+    <DashboardLayout role="ADMIN">
+      <div className="max-w-6xl mx-auto space-y-6 pb-8">
+        <div>
+          <Link href="/admin/students" className="text-blue-600 hover:text-blue-800 font-bold text-xs sm:text-sm inline-flex items-center gap-1 mb-3">
+            <span>&larr;</span>
+            <span>Guruhlar ro'yxatiga qaytish</span>
+          </Link>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            {group?.name} guruhi boshqaruvi
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Guruhga biriktirilgan Ustoz va Starssalar nazorati
+          </p>
+        </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Ustoz section */}
-          <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Guruh Ustozi</h2>
-              <button onClick={() => handleCreate('USTOZ')} className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow hover:bg-green-700">+ Ustoz yaratish</button>
+          <div className="bg-white p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200">
+            <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span>👨‍🏫</span> Guruh Ustozi
+              </h2>
+              <button 
+                onClick={() => handleCreate('USTOZ')} 
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-xs active:scale-95 transition cursor-pointer"
+              >
+                + Ustoz yaratish
+              </button>
             </div>
-            {ustozlar.length === 0 ? <p className="text-gray-500">Ustoz tayinlanmagan</p> : (
+            {ustozlar.length === 0 ? (
+              <p className="text-slate-400 text-sm py-4">Ustoz tayinlanmagan</p>
+            ) : (
               <div className="space-y-3">
                 {ustozlar.map(u => (
-                  <div key={u.id} className="p-4 bg-green-50 rounded-xl border border-green-100">
-                    <p className="font-bold text-green-900">{u.full_name}</p>
-                    <p className="text-sm text-green-700">Login: {u.username}</p>
-                    {u.phone && <p className="text-sm text-green-700">Tel: {u.phone}</p>}
-                    <div className="mt-3 flex space-x-2">
-                      <button onClick={() => handleEdit(u)} className="text-xs font-bold text-blue-600 hover:underline">Tahrirlash</button>
-                      <button onClick={() => handleDelete(u.id)} className="text-xs font-bold text-red-600 hover:underline">O'chirish</button>
+                  <div key={u.id} className="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-100">
+                    <p className="font-bold text-slate-900 text-base">{u.full_name}</p>
+                    <p className="text-xs font-mono text-emerald-800 mt-0.5">Login: {u.username}</p>
+                    {u.phone && <p className="text-xs text-slate-600 mt-1">📞 {u.phone}</p>}
+                    <div className="mt-3 flex gap-2">
+                      <button onClick={() => handleEdit(u)} className="text-xs font-bold text-blue-600 bg-white px-2.5 py-1 rounded-lg border border-blue-200 shadow-xs cursor-pointer">Tahrirlash</button>
+                      <button onClick={() => handleDelete(u.id)} className="text-xs font-bold text-rose-600 bg-white px-2.5 py-1 rounded-lg border border-rose-200 shadow-xs cursor-pointer">O'chirish</button>
                     </div>
                   </div>
                 ))}
@@ -142,71 +153,90 @@ export default function GroupDetails() {
           </div>
 
           {/* Starssa section */}
-          <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Guruh Sardorlari (Starssa)</h2>
+          <div className="bg-white p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200">
+            <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span>⭐</span> Guruh Sardorlari (Starssa)
+              </h2>
               {starssalar.length < 2 && (
-                <button onClick={() => handleCreate('STARSSA')} className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow hover:bg-blue-700">+ Sardor yaratish</button>
+                <button 
+                  onClick={() => handleCreate('STARSSA')} 
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-xs active:scale-95 transition cursor-pointer"
+                >
+                  + Sardor yaratish
+                </button>
               )}
             </div>
-            {starssalar.length === 0 ? <p className="text-gray-500">Sardorlar tayinlanmagan</p> : (
+            {starssalar.length === 0 ? (
+              <p className="text-slate-400 text-sm py-4">Sardorlar tayinlanmagan</p>
+            ) : (
               <div className="space-y-3">
                 {starssalar.map(u => (
-                  <div key={u.id} className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                    <p className="font-bold text-blue-900">{u.full_name}</p>
-                    <p className="text-sm text-blue-700">Login: {u.username}</p>
-                    {u.phone && <p className="text-sm text-blue-700">Tel: {u.phone}</p>}
-                    <div className="mt-3 flex space-x-2">
-                      <button onClick={() => handleEdit(u)} className="text-xs font-bold text-blue-600 hover:underline">Tahrirlash</button>
-                      <button onClick={() => handleDelete(u.id)} className="text-xs font-bold text-red-600 hover:underline">O'chirish</button>
+                  <div key={u.id} className="p-4 bg-blue-50/70 rounded-2xl border border-blue-100">
+                    <p className="font-bold text-slate-900 text-base">{u.full_name}</p>
+                    <p className="text-xs font-mono text-blue-800 mt-0.5">Login: {u.username}</p>
+                    {u.phone && <p className="text-xs text-slate-600 mt-1">📞 {u.phone}</p>}
+                    <div className="mt-3 flex gap-2">
+                      <button onClick={() => handleEdit(u)} className="text-xs font-bold text-blue-600 bg-white px-2.5 py-1 rounded-lg border border-blue-200 shadow-xs cursor-pointer">Tahrirlash</button>
+                      <button onClick={() => handleDelete(u.id)} className="text-xs font-bold text-rose-600 bg-white px-2.5 py-1 rounded-lg border border-rose-200 shadow-xs cursor-pointer">O'chirish</button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-            <p className="text-xs text-gray-500 mt-4">* Bitta guruhga uzog'i 2 ta Starssa tayinlash mumkin.</p>
+            <p className="text-xs text-slate-400 mt-4">* Bitta guruhga ko'pi bilan 2 ta Starssa tayinlash tavsiya etiladi.</p>
           </div>
         </div>
 
         {/* Modal */}
         {showForm && (
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800">
-                {formData.role === 'USTOZ' ? 'Ustoz' : 'Starssa'} {editingId ? 'tahrirlash' : 'yaratish'}
-              </h2>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
+            <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-extrabold text-slate-900">
+                  {formData.role === 'USTOZ' ? 'Ustoz' : 'Starssa'} {editingId ? 'tahrirlash' : 'yaratish'}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-sm cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">F.I.SH.</label>
-                  <input required className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} />
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">F.I.SH. *</label>
+                  <input required className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Login</label>
-                    <input required className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} />
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Login *</label>
+                    <input required className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Parol {editingId && '(yangi)'}</label>
-                    <input type="text" required={!editingId} className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Parol {editingId ? '(yangi)' : '*'}</label>
+                    <input type="text" required={!editingId} className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} placeholder={editingId ? "Bo'sh qoldirish mumkin" : "Parol kiriting"} />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefon raqami (ixtiyoriy)</label>
-                  <input type="tel" className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="+998901234567" />
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Telefon raqami (ixtiyoriy)</label>
+                  <input type="tel" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="+998901234567" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tug'ilgan sanasi (ixtiyoriy)</label>
-                  <input type="date" className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" value={formData.birth_date} onChange={e => setFormData({...formData, birth_date: e.target.value})} />
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tug'ilgan sanasi (ixtiyoriy)</label>
+                  <input type="date" className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm" value={formData.birth_date} onChange={e => setFormData({...formData, birth_date: e.target.value})} />
                 </div>
-                <div className="flex justify-end space-x-3 mt-6">
-                  <button type="button" onClick={() => setShowForm(false)} className="px-5 py-2.5 text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 rounded-xl transition-all">Bekor qilish</button>
-                  <button type="submit" className="px-5 py-2.5 bg-blue-600 font-medium text-white rounded-xl shadow-lg hover:bg-blue-700 transition-all">Saqlash</button>
+                <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                  <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-semibold text-sm cursor-pointer">Bekor qilish</button>
+                  <button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-md shadow-blue-500/20 active:scale-95 transition cursor-pointer">Saqlash</button>
                 </div>
               </form>
             </div>
           </div>
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

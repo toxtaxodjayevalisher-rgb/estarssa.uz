@@ -13,6 +13,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
     const { username, password, role, full_name, status, phone, birth_date, assigned_group } = await req.json();
     const { id } = await params;
+
+    const target = await prisma.user.findUnique({ where: { id } });
+    if (!target || target.role === 'ADMIN' || role === 'ADMIN') {
+      return NextResponse.json({ error: "Admin akkauntini o'zgartirish taqiqlangan" }, { status: 403 });
+    }
     
     // Check limit for Starssa if group changed or set
     if (role === 'STARSSA' && assigned_group) {
@@ -56,6 +61,11 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
 
     const { id } = await params;
     if (id === auth.id || id === auth.userId) return NextResponse.json({ error: 'O`z akkauntingizni o`chira olmaysiz' }, { status: 400 });
+
+    const target = await prisma.user.findUnique({ where: { id } });
+    if (!target || target.role === 'ADMIN') {
+      return NextResponse.json({ error: "Admin akkauntini o'chirish taqiqlangan" }, { status: 403 });
+    }
 
     // Bog'langan yozuvlarni xavfsiz tozalash/qayta biriktirish
     await prisma.notificationLog.deleteMany({ where: { recipient_id: id } });

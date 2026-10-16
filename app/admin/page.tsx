@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import BirthdayBanner from '@/app/components/BirthdayBanner';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -39,6 +40,8 @@ export default function AdminDashboard() {
       
       <div className="flex-1 p-4 md:p-8 overflow-y-auto text-black bg-slate-50 relative">
         <h1 className="text-3xl font-bold mb-6 text-slate-800">Admin Dashboard</h1>
+        
+        <BirthdayBanner />
         
         {loading ? (
           <div className="flex items-center justify-center h-64">

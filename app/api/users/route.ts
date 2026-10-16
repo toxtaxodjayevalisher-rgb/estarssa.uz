@@ -14,7 +14,9 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const assigned_group = searchParams.get('assigned_group');
 
-    let where: any = {};
+    let where: any = {
+      role: { not: 'ADMIN' }
+    };
     if (assigned_group) where.assigned_group = assigned_group;
 
     const users = await prisma.user.findMany({
@@ -36,6 +38,10 @@ export async function POST(req: Request) {
     const { username, password, role, full_name, phone, birth_date, assigned_group } = await req.json();
     if (!username || !password || !role || !full_name) {
       return NextResponse.json({ error: 'Barcha maydonlarni to`ldiring' }, { status: 400 });
+    }
+
+    if (role === 'ADMIN') {
+      return NextResponse.json({ error: "Admin akkauntini yaratish taqiqlangan" }, { status: 403 });
     }
 
     // Check Starssa limit if group is provided

@@ -145,6 +145,7 @@ export default function AdminUsers() {
   };
 
   const filteredUsers = users.filter(u => {
+    if (u.role === 'ADMIN') return false;
     if (filterRole && u.role !== filterRole) return false;
     if (filterGroup && u.assigned_group !== filterGroup) return false;
     return true;
@@ -180,7 +181,7 @@ export default function AdminUsers() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Akkauntlar Boshqaruvi</h1>
-            <p className="text-gray-500 text-sm mt-1">Ustoz, Starssa va Admin login/parollarini yaratish, tahrirlash va o'chirish</p>
+            <p className="text-gray-500 text-sm mt-1">Ustoz va Starssa login/parollarini yaratish, tahrirlash va boshqarish</p>
           </div>
           <div className="flex gap-2">
             <button 
@@ -220,10 +221,9 @@ export default function AdminUsers() {
               onChange={e => setFilterRole(e.target.value)} 
               className="border border-gray-300 rounded-xl px-3 py-1.5 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Barchasi</option>
+              <option value="">Barchasi (Ustoz & Starssa)</option>
               <option value="USTOZ">Ustozlar</option>
               <option value="STARSSA">Starssalar</option>
-              <option value="ADMIN">Adminlar</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
@@ -373,7 +373,6 @@ export default function AdminUsers() {
                     >
                       <option value="STARSSA">Starssa (Sardor)</option>
                       <option value="USTOZ">Ustoz (O'qituvchi)</option>
-                      <option value="ADMIN">Admin (Boshqaruvchi)</option>
                     </select>
                   </div>
 

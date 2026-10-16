@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import BirthdayBanner from '@/app/components/BirthdayBanner';
 
 type Student = { id: string, full_name: string, group_name: string, phone?: string, birth_date?: string };
 type StatsData = {
@@ -138,6 +139,9 @@ export default function StarssaDashboard() {
             <span>📅</span> {new Date().toLocaleDateString('uz-UZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
         </div>
+
+        {/* Tug'ilgan kun tabrigi */}
+        <BirthdayBanner />
         
         {/* Bugungi davomat */}
         {stats && (

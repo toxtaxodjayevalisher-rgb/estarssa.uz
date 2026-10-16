@@ -139,11 +139,8 @@ export default function AnnouncementsClient({ role }: { role: string }) {
       <div className="space-y-6">
         {announcements.map((a) => (
           <div key={a.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all relative">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-bold text-blue-900 pr-12">{a.title}</h3>
-              <span className="text-xs font-semibold px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
-                {a.created_by}
-              </span>
+            <div className="mb-3">
+              <h3 className="text-xl font-bold text-slate-900">{a.title}</h3>
             </div>
             <p className="text-gray-700 whitespace-pre-wrap mb-4 leading-relaxed">{a.content}</p>
             {a.image_url && (

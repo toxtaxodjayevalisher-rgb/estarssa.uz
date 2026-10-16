@@ -31,9 +31,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Sarlavha va matn kiritilishi shart' }, { status: 400 });
     }
 
-    const senderTitle = auth.role === 'ADMIN' ? 'Administrator' : auth.role === 'USTOZ' ? 'Ustoz' : 'Starssa';
-    const senderName = auth.full_name || auth.username || senderTitle;
-    const caption = `📢 <b>DIQQAT E'LON: ${title}</b>\n\n${content}\n\n✍️ <i>Yuboruvchi: ${senderName} (${senderTitle})</i>`;
+    // Hech qanday "E'lon" yoki "Yuboruvchi" so'zi bo'lmaydi, shunchaki Sarlavha va Matn
+    const caption = `<b>${title}</b>\n\n${content}`;
 
     let imageUrl = null;
     let msgIds: any = [];
@@ -53,7 +52,7 @@ export async function POST(req: Request) {
         title,
         content,
         image_url: imageUrl,
-        created_by: `${senderName} (${senderTitle})`,
+        created_by: 'E\'lon',
         telegram_msg_ids: JSON.stringify(msgIds)
       }
     });

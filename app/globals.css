@@ -136,4 +136,17 @@
   button, input, select, textarea {
     font-family: inherit;
   }
+
+  /* Netlify badge / drawer concealment */
+  [data-netlify-deploy-id],
+  [data-netlify-drawer],
+  [id*="netlify"],
+  [class*="netlify"],
+  iframe[src*="netlify"],
+  a[href*="netlify.com"] {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
 }

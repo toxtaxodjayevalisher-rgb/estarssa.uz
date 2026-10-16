@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type Role = 'STARSSA' | 'USTOZ' | 'ADMIN';
 
@@ -50,6 +50,27 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const hideNetlify = () => {
+      document.querySelectorAll('a, div, iframe').forEach((el) => {
+        if (
+          el.textContent?.includes('Powered by Netlify') ||
+          (el instanceof HTMLAnchorElement && el.href.includes('netlify.com')) ||
+          el.id?.toLowerCase().includes('netlify') ||
+          el.className?.toString().toLowerCase().includes('netlify')
+        ) {
+          (el as HTMLElement).style.setProperty('display', 'none', 'important');
+          (el as HTMLElement).style.setProperty('opacity', '0', 'important');
+          (el as HTMLElement).style.setProperty('pointer-events', 'none', 'important');
+          (el as HTMLElement).style.setProperty('visibility', 'hidden', 'important');
+        }
+      });
+    };
+    hideNetlify();
+    const interval = setInterval(hideNetlify, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const items = navItemsByRole[role] || [];
 
@@ -220,12 +241,12 @@ export default function DashboardLayout({
       )}
 
       {/* ================= MAIN CONTENT CONTAINER ================= */}
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-24 md:pb-8 relative w-full">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-40 md:pb-8 relative w-full">
         {children}
       </main>
 
       {/* ================= MOBILE BOTTOM NAVIGATION BAR ================= */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-lg border-t border-slate-200/90 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2 py-1.5 flex items-center justify-around">
+      <nav className="md:hidden fixed bottom-[72px] left-3 right-3 z-40 bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.12)] px-2 py-2 rounded-2xl flex items-center justify-around">
         {bottomItems.map((item) => {
           const isActive = pathname === item.href;
           const hasBadge = item.href.includes('approve') && pendingBadge && pendingBadge > 0;

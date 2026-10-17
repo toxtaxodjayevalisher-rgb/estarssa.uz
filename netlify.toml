@@ -1,0 +1,15 @@
+[build]
+  command = "prisma generate && next build"
+  publish = ".next"
+
+[functions]
+  directory = "netlify/functions"
+
+[functions."morning-attendance"]
+  schedule = "35 3 * * *"
+
+[functions."students-discipline"]
+  schedule = "30 6 * * *"
+
+[functions."afternoon-approval"]
+  schedule = "0 9 * * *"

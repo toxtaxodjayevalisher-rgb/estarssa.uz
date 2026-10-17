@@ -1,0 +1,38 @@
+name: Daily Telegram Reminders
+
+on:
+  schedule:
+    # 08:35 Tashkent (UTC+5) = 03:35 UTC
+    - cron: '35 3 * * *'
+    # 11:30 Tashkent (UTC+5) = 06:30 UTC
+    - cron: '30 6 * * *'
+    # 14:00 Tashkent (UTC+5) = 09:00 UTC
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    inputs:
+      type:
+        description: 'Eslatma turi (auto, morning_attendance, students_discipline, afternoon_approval)'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - morning_attendance
+          - students_discipline
+          - afternoon_approval
+      force:
+        description: 'Allaqachon yuborilgan bo`lsa ham qayta yuborish (true/false)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  send-reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Daily Reminder via API
+        run: |
+          TYPE="${{ github.event.inputs.type || 'auto' }}"
+          FORCE="${{ github.event.inputs.force || 'false' }}"
+          echo "Executing reminder type: $TYPE (force: $FORCE)"
+          curl -s -f "https://e-starssauz.netlify.app/api/cron/reminders?type=${TYPE}&force=${FORCE}" || echo "Trigger sent"

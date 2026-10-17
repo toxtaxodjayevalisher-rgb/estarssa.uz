@@ -124,16 +124,7 @@ export async function POST(req: Request) {
       }
 
       try {
-        const token = process.env.TELEGRAM_BOT_TOKEN || '8983797302:AAHrMF0yZQ0qOgRGgE96SL6nV5hMKPdD_p4';
-        const CHAT_IDS = ['-5459131960', '1973751873'];
-        
-        for (const chatId of CHAT_IDS) {
-          await globalThis.fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: chatId, text: telegramMessage })
-          });
-        }
+        await sendTelegramMessage(telegramMessage, ['-5459131960', '1973751873']);
       } catch(e) { 
         console.error("Telegram xatosi:", e); 
       }

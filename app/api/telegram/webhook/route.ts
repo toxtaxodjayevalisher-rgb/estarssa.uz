@@ -164,16 +164,15 @@ async function handleHelpCommand(
   });
 
   const starssaChatIds = new Set<string>();
-  // Primary default starssa chat (To'xtaxodjayev Alisher)
-  starssaChatIds.add('1973751873');
-  // Admin / starssa channel
-  starssaChatIds.add('-5459131960');
+  // Foydalanuvchi talabiga ko'ra Starssalar lichkasi:
+  starssaChatIds.add('6820579298'); // Mohinur lichkasi
+  starssaChatIds.add('1973751873'); // Alisher lichkasi
 
   for (const u of starssaUsers) {
     if (u.telegram_id) starssaChatIds.add(u.telegram_id);
   }
 
-  // Send alert to Starssas
+  // Send alert to Starssas (private chats)
   for (const sChatId of starssaChatIds) {
     await sendTelegramReply(sChatId, starssaAlert);
   }

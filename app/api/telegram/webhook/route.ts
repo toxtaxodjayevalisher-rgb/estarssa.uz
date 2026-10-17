@@ -128,6 +128,74 @@ async function sendHomeworkReply(chatId: string | number, replyToMessageId?: num
   return await sendTelegramReply(chatId, text, replyToMessageId);
 }
 
+async function handleHelpCommand(
+  chatId: string | number,
+  messageId?: number,
+  from?: any,
+  chatTitle?: string
+) {
+  // Check if requested recently (e.g. in last 2 minutes) to prevent spam
+  const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+  const recent = await prisma.telegramMessage.findFirst({
+    where: {
+      message_type: 'HELP_HOMEWORK_REQUEST',
+      sent_at: { gte: twoMinutesAgo }
+    }
+  });
+
+  if (recent) {
+    return await sendTelegramReply(
+      chatId,
+      `⏳ <b>Eslatma yaqinda yuborilgan!</b>\n\nSardorga (Starssa) uyga vazifani kiritish bo'yicha so'rov allaqachon yetkazilgan. Iltimos, biroz kuting.`,
+      messageId
+    );
+  }
+
+  const senderName = from
+    ? `${from.first_name || ''} ${from.last_name || ''}`.trim() + (from.username ? ` (@${from.username})` : '')
+    : "O'quvchi";
+  const groupName = chatTitle || "O'quvchilar guruhi";
+
+  const starssaAlert = `🔔 <b>DIQQAT, HURMATLI STARSSA!</b>\n\nGuruh o'quvchilari tomonidan <b>/help</b> buyrug'i orqali yangi uyga vazifani yuklash so'raldi!\n\n👤 <b>So'rov yubordi:</b> ${senderName}\n👥 <b>Guruh:</b> ${groupName}\n\nIltimos, bugungi fanlar bo'yicha uyga vazifalarni tizimga kiriting va guruhga jo'nating:\n👉 https://e-starssauz.netlify.app/starssa/homework`;
+
+  // Find Starssa users from DB with telegram_id
+  const starssaUsers = await prisma.user.findMany({
+    where: { role: 'STARSSA', telegram_id: { not: null } }
+  });
+
+  const starssaChatIds = new Set<string>();
+  // Primary default starssa chat (To'xtaxodjayev Alisher)
+  starssaChatIds.add('1973751873');
+  // Admin / starssa channel
+  starssaChatIds.add('-5459131960');
+
+  for (const u of starssaUsers) {
+    if (u.telegram_id) starssaChatIds.add(u.telegram_id);
+  }
+
+  // Send alert to Starssas
+  for (const sChatId of starssaChatIds) {
+    await sendTelegramReply(sChatId, starssaAlert);
+  }
+
+  // Record in DB for cooldown & history
+  await prisma.telegramMessage.create({
+    data: {
+      telegram_id: Array.from(starssaChatIds).join(','),
+      message: starssaAlert,
+      message_type: 'HELP_HOMEWORK_REQUEST',
+      status: 'SENT'
+    }
+  });
+
+  // Reply back in the group to confirm
+  return await sendTelegramReply(
+    chatId,
+    `✅ <b>Uyga vazifa so'rovi yuborildi!</b>\n\nGuruh sardoriga (Starssa) yangi uyga vazifalarni kiritish bo'yicha eslatma yetkazildi. Vazifalar kiritilishi bilan guruhga xabar boradi!`,
+    messageId
+  );
+}
+
 export async function POST(req: Request) {
   try {
     const update = await req.json();
@@ -158,6 +226,17 @@ export async function POST(req: Request) {
       lowerText.startsWith('/homework@')
     ) {
       await sendHomeworkReply(chatId, message.message_id);
+    }
+    // /help, /help@estarssaBot, /yordam
+    else if (
+      lowerText === '/help' ||
+      lowerText.startsWith('/help ') ||
+      lowerText.startsWith('/help@') ||
+      lowerText === '/yordam' ||
+      lowerText.startsWith('/yordam ') ||
+      lowerText.startsWith('/yordam@')
+    ) {
+      await handleHelpCommand(chatId, message.message_id, message.from, message.chat?.title);
     }
 
     return NextResponse.json({ ok: true });
@@ -196,9 +275,15 @@ export async function GET(req: Request) {
     return NextResponse.json({ demo_hw_sent: true, result });
   }
 
+  if (action === 'demo_help' || action === 'help') {
+    const targetChat = searchParams.get('chat_id') || '-1004395732727';
+    const result = await handleHelpCommand(targetChat, undefined, { first_name: "O'quvchi (Demo)" }, 'Уй иши');
+    return NextResponse.json({ demo_help_sent: true, result });
+  }
+
   return NextResponse.json({
     status: 'active',
     description: 'E-Starssa Telegram Webhook handler',
-    commands: ['/start', '/hw']
+    commands: ['/start', '/hw', '/help']
   });
 }

@@ -93,6 +93,9 @@ export default function TelegramProfilePage() {
                 <p className="text-xs text-slate-300">
                   F.I.SH yoki telefon raqamingiz orqali qaysi guruhda o'qishingiz va rolingizni bilib oling.
                 </p>
+                <p className="text-[11px] text-indigo-300 pt-1">
+                  ℹ️ Saytga faqat Starssa, Ustoz va Adminlar kira oladi. O'quvchilar ro'yxatdan o'tmaydi.
+                </p>
               </div>
 
               {error && (
@@ -113,7 +116,7 @@ export default function TelegramProfilePage() {
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Masalan: Abdurahimova Zebo"
+                      placeholder="Familiya va Ism kiriting"
                       className="w-full bg-slate-800/80 border border-white/15 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
                     />
                   </div>
@@ -129,7 +132,7 @@ export default function TelegramProfilePage() {
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+998 90 123 45 67"
+                      placeholder="+998 -- --- -- --"
                       className="w-full bg-slate-800/80 border border-white/15 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
                     />
                   </div>
@@ -215,13 +218,19 @@ export default function TelegramProfilePage() {
                   <span>Boshqa o'quvchini qidirish</span>
                 </button>
 
-                <a
-                  href="/login"
-                  className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-medium rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-md"
-                >
-                  <span>🌐</span>
-                  <span>Tizimga kirish (Sayt)</span>
-                </a>
+                {person.role === "O'quvchi" ? (
+                  <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl text-xs text-amber-200 text-center leading-relaxed">
+                    📌 <b>Hurmatli o'quvchi!</b> Saytga faqat Starssa, Ustoz va Adminlar kira oladi. O'quvchilar saytdan ro'yxatdan o'tmaydi. Barcha uyga vazifalar va e'lonlar Telegram guruhingizda beriladi.
+                  </div>
+                ) : (
+                  <a
+                    href="https://e-starssauz.netlify.app/login"
+                    className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-medium rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-md"
+                  >
+                    <span>🔐</span>
+                    <span>Tizimga kirish (Portal)</span>
+                  </a>
+                )}
 
                 <button
                   onClick={handleClose}
@@ -235,13 +244,9 @@ export default function TelegramProfilePage() {
           )}
 
           <div className="text-center pt-2">
-            <a
-              href="/login"
-              className="inline-flex items-center gap-1.5 text-xs text-indigo-300 hover:text-white underline underline-offset-4"
-            >
-              <span>🌐</span>
-              <span>Saytga to'g'ridan-to'g'ri kirish (Login)</span>
-            </a>
+            <p className="text-[11px] text-slate-400">
+              ℹ️ Sayt faqat Starssa, Ustoz va Adminlar portali. O'quvchilar uchun ro'yxatdan o'tish talab etilmaydi.
+            </p>
           </div>
         </div>
 

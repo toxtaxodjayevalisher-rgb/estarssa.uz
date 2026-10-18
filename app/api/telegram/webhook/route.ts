@@ -289,10 +289,18 @@ async function handlePrivateSearch(chatId: string | number, text: string, messag
   }
 
   if (matched) {
-    const replyText = `✅ <b>Sizning ma'lumotlaringiz:</b>\n\n👤 <b>F.I.SH:</b> ${matched.name}\n👥 <b>Guruhi:</b> <b>${matched.group}</b>\n🎓 <b>Roli:</b> <b>${matched.role}</b>\n📞 <b>Telefon:</b> ${matched.phone || 'Kiritilmagan'}\n\n<i>Batafsil ma'lumot olish yoki oyna orqali ko'rish uchun quyidagi tugmani bosing:</i>`;
+    const isStudent = matched.role === "O'quvchi";
+    let roleNotice = '';
+    if (isStudent) {
+      roleNotice = `\n\n📌 <b>Hurmatli o'quvchi!</b> Saytga faqat Starssa, Ustoz va Adminlar kira oladi. O'quvchilar saytdan ro'yxatdan o'tmaydi. Barcha uyga vazifalar va e'lonlar guruhingizda berib boriladi.`;
+    } else {
+      roleNotice = `\n\n🔐 <b>Siz tizim mas'ulisiz:</b> Saytga kirish uchun quyidagi havoladan foydalaning:\n👉 https://e-starssauz.netlify.app/login`;
+    }
+
+    const replyText = `✅ <b>Sizning ma'lumotlaringiz:</b>\n\n👤 <b>F.I.SH:</b> ${matched.name}\n👥 <b>Guruhi:</b> <b>${matched.group}</b>\n🎓 <b>Roli:</b> <b>${matched.role}</b>\n📞 <b>Telefon:</b> ${matched.phone || 'Kiritilmagan'}${roleNotice}`;
     await sendTelegramReply(chatId, replyText, messageId, getStartKeyboard(true));
   } else if (cleanPhone.length >= 7 || qName.length >= 3) {
-    const notFoundText = `❌ <b>Kiritilgan ma'lumot bo'yicha o'quvchi yoki xodim topilmadi.</b>\n\nIltimos, F.I.SH yoki telefon raqamingizni tekshirib qaytadan yozing, yoki quyidagi tugma orqali oynani oching:`;
+    const notFoundText = `❌ <b>Kiritilgan ma'lumot bo'yicha tizimda ma'lumot topilmadi.</b>\n\nIltimos, Familiya va Ismingizni yoki telefon raqamingizni to'g'ri yozganingizni tekshirib qaytadan yuboring:`;
     await sendTelegramReply(chatId, notFoundText, messageId, getStartKeyboard(true));
   }
 }
@@ -313,7 +321,7 @@ export async function POST(req: Request) {
 
     // /start, /start@estarssaBot
     if (lowerText === '/start' || lowerText.startsWith('/start ') || lowerText.startsWith('/start@')) {
-      const welcomeText = `🌟 <b>Assalomu alaykum! E-STARSSA tizimiga xush kelibsiz!</b>\n\n<b>E-STARSSA</b> — bu guruh davomati, o'quv intizomi va kundalik faoliyatni nazorat qilish platformasi.\n\nO'quvchi ma'lumotlarini tekshirish, qaysi guruhda o'qishingiz va rolingizni bilish uchun quyidagi <b>"Oynani ochish 📱"</b> tugmasini bosing:`;
+      const welcomeText = `🌟 <b>Assalomu alaykum! E-STARSSA tizimiga xush kelibsiz!</b>\n\nℹ️ <b>Muhim eslatma:</b> Saytga faqat Starssa (guruh sardori), Ustoz va Adminlar kira oladi. O'quvchilar saytdan ro'yxatdan o'tmaydi.\n\n🔍 <b>Guruh va rolingizni bilish uchun:</b>\nIltimos, <b>F.I.SH (Familiya, Ism)</b> yoki <b>telefon raqamingizni</b> shu yerga yozib yuboring (yoki quyidagi tugma orqali oynani oching):`;
       await sendTelegramReply(chatId, welcomeText, message.message_id, getStartKeyboard(isPrivate));
     } 
     // /hw, /hw@estarssaBot, /vazifa, /homework

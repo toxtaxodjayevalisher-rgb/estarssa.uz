@@ -36,7 +36,7 @@ const REMINDERS = {
   morning_attendance: {
     type: 'REMINDER_MORNING_ATTENDANCE',
     chatId: CHAT_ADMIN,
-    getText: () => `🔔 <b>Davomat eslatmasi!</b>\n\nAssalomu alaykum!\nBugungi guruh davomati qilindimi?\n\nIltimos, o'quvchilar davomatini o'z vaqtida belgilab, ustozga tasdiqlash uchun yuboring!\n\n👉 https://e-starssauz.netlify.app/starssa/attendance`
+    getText: () => `🔔 <b>Davomat eslatmasi!</b>\n\nAssalomu alaykum!\nBugungi guruh davomati qilindimi?\n\nIltimos, o'quvchilar davomatini o'z vaqtida belgilab, ustozga tasdiqlash uchun yuboring!\n\n👉 https://e-starssa.netlify.app/starssa/attendance`
   },
   students_discipline: {
     type: 'REMINDER_STUDENTS_DISCIPLINE',
@@ -46,7 +46,7 @@ const REMINDERS = {
   afternoon_approval: {
     type: 'REMINDER_AFTERNOON_APPROVAL',
     chatId: CHAT_ADMIN,
-    getText: () => `📋 <b>Davomat tasdiqlandimi?</b>\n\nAssalomu alaykum!\nBugungi kiritilgan guruh davomati tasdiqlandimi?\n\nHurmatli ustoz va mas'ullardan davomat holatini tekshirib, tasdiqlab qo'yishlarini so'raymiz!\n\n👉 https://e-starssauz.netlify.app/ustoz/approve`
+    getText: () => `📋 <b>Davomat tasdiqlandimi?</b>\n\nAssalomu alaykum!\nBugungi kiritilgan guruh davomati tasdiqlandimi?\n\nHurmatli ustoz va mas'ullardan davomat holatini tekshirib, tasdiqlab qo'yishlarini so'raymiz!\n\n👉 https://e-starssa.netlify.app/ustoz/approve`
   }
 };
 

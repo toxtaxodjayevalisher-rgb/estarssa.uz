@@ -1,6 +1,6 @@
 export default async () => {
   try {
-    const res = await fetch('https://e-starssauz.netlify.app/api/cron/reminders?type=afternoon_approval');
+    const res = await fetch('https://e-starssa.netlify.app/api/cron/reminders?type=afternoon_approval');
     const data = await res.json();
     return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (err: any) {

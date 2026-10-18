@@ -17,7 +17,7 @@ Assalomu alaykum!
 ▫️ <b>🎉 Tug'ilgan kunlar:</b> O'quvchilarning tavallud kunlari tizim orqali eslatib boriladi.
 
 🌐 <b>Platforma veb-sayti:</b>
-👉 https://e-starssauz.netlify.app/
+👉 https://e-starssa.netlify.app/
 
 <i>Tartib-intizom va darslarga mas'uliyat bilan yondashing!</i>`;
 
@@ -26,13 +26,13 @@ const START_KEYBOARD = {
     [
       {
         text: '📱 Oynani ochish (F.I.SH & Guruh)',
-        web_app: { url: 'https://e-starssauz.netlify.app/telegram/profile' }
+        web_app: { url: 'https://e-starssa.netlify.app/telegram/profile' }
       }
     ],
     [
       {
         text: '🌐 E-STARSSA Saytiga kirish',
-        url: 'https://e-starssauz.netlify.app/'
+        url: 'https://e-starssa.netlify.app/'
       }
     ]
   ]
@@ -180,7 +180,7 @@ async function handleHelpCommand(
     : "O'quvchi";
   const groupName = chatTitle || "O'quvchilar guruhi";
 
-  const starssaAlert = `🔔 <b>DIQQAT, HURMATLI STARSSA!</b>\n\nGuruh o'quvchilari tomonidan <b>/help</b> buyrug'i orqali yangi uyga vazifani yuklash so'raldi!\n\n👤 <b>So'rov yubordi:</b> ${senderName}\n👥 <b>Guruh:</b> ${groupName}\n\nIltimos, bugungi fanlar bo'yicha uyga vazifalarni tizimga kiriting va guruhga jo'nating:\n👉 https://e-starssauz.netlify.app/starssa/homework`;
+  const starssaAlert = `🔔 <b>DIQQAT, HURMATLI STARSSA!</b>\n\nGuruh o'quvchilari tomonidan <b>/help</b> buyrug'i orqali yangi uyga vazifani yuklash so'raldi!\n\n👤 <b>So'rov yubordi:</b> ${senderName}\n👥 <b>Guruh:</b> ${groupName}\n\nIltimos, bugungi fanlar bo'yicha uyga vazifalarni tizimga kiriting va guruhga jo'nating:\n👉 https://e-starssa.netlify.app/starssa/homework`;
 
   const starssaUsers = await prisma.user.findMany({
     where: { role: 'STARSSA', telegram_id: { not: null } }
@@ -350,7 +350,7 @@ export async function GET(req: Request) {
   const action = searchParams.get('action');
 
   if (action === 'setWebhook') {
-    const webhookUrl = 'https://e-starssauz.netlify.app/api/telegram/webhook';
+    const webhookUrl = searchParams.get('url') || 'https://e-starssa.netlify.app/api/telegram/webhook';
     const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(webhookUrl)}&drop_pending_updates=true`);
     const data = await res.json();
     return NextResponse.json(data);

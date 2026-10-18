@@ -19,6 +19,13 @@ export default function StarssaStudents() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Telegram messaging state
+  const [selectedStudentForMsg, setSelectedStudentForMsg] = useState<Student | null>(null);
+  const [msgText, setMsgText] = useState('');
+  const [msgTarget, setMsgTarget] = useState<'group' | 'direct'>('group');
+  const [msgSending, setMsgSending] = useState(false);
+  const [msgToast, setMsgToast] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
   useEffect(() => {
     fetch('/api/students').then(r => r.json()).then(data => {
       if (Array.isArray(data)) setStudents(data);
@@ -55,6 +62,40 @@ export default function StarssaStudents() {
       birth_date: s.birth_date ? s.birth_date.split('T')[0] : ''
     });
     setShowForm(true);
+  };
+
+  const handleSendMessage = async () => {
+    if (!selectedStudentForMsg || !msgText.trim()) return;
+    setMsgSending(true);
+    setMsgToast(null);
+
+    try {
+      const res = await fetch('/api/starssa/send-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          student_id: selectedStudentForMsg.id,
+          message: msgText.trim(),
+          target: msgTarget
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setMsgToast({ type: 'error', text: data.error || "Xabar yuborishda xatolik yuz berdi" });
+      } else {
+        setMsgToast({ type: 'success', text: `Xabar muvaffaqiyatli ${data.sent_to} yuborildi!` });
+        setTimeout(() => {
+          setSelectedStudentForMsg(null);
+          setMsgText('');
+          setMsgToast(null);
+        }, 1500);
+      }
+    } catch (err: any) {
+      setMsgToast({ type: 'error', text: "Tarmoq xatosi yuz berdi" });
+    } finally {
+      setMsgSending(false);
+    }
   };
 
   const filtered = students.filter(s => 
@@ -136,13 +177,27 @@ export default function StarssaStudents() {
                           </span>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => editStudent(s)}
-                        className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition active:scale-95 cursor-pointer flex-shrink-0"
-                      >
-                        ✏️ Tahrirlash
-                      </button>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedStudentForMsg(s);
+                            setMsgText('');
+                            setMsgToast(null);
+                          }}
+                          className="text-xs font-bold text-sky-600 bg-sky-50 hover:bg-sky-100 px-2.5 py-1.5 rounded-lg transition active:scale-95 cursor-pointer flex items-center gap-1"
+                        >
+                          <span>💬</span>
+                          <span>Telegram</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => editStudent(s)}
+                          className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition active:scale-95 cursor-pointer"
+                        >
+                          ✏️
+                        </button>
+                      </div>
                     </div>
 
                     {/* Stats pills */}
@@ -241,12 +296,26 @@ export default function StarssaStudents() {
                           <td className="px-4 py-3.5 text-center font-bold text-rose-600 text-xs">{sababsiz}</td>
                           <td className="px-4 py-3.5 text-center font-bold text-emerald-600 text-xs">{sababli}</td>
                           <td className="px-5 py-3.5 text-right">
-                            <button 
-                              onClick={() => editStudent(s)} 
-                              className="text-blue-600 hover:text-blue-800 font-bold text-xs bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition active:scale-95 cursor-pointer"
-                            >
-                              Tahrirlash
-                            </button>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  setSelectedStudentForMsg(s);
+                                  setMsgText('');
+                                  setMsgToast(null);
+                                }}
+                                className="text-sky-600 hover:text-sky-800 font-bold text-xs bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-lg transition active:scale-95 cursor-pointer flex items-center gap-1"
+                              >
+                                <span>💬</span>
+                                <span>Telegram</span>
+                              </button>
+                              <button 
+                                onClick={() => editStudent(s)} 
+                                className="text-blue-600 hover:text-blue-800 font-bold text-xs bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition active:scale-95 cursor-pointer"
+                              >
+                                Tahrirlash
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -260,6 +329,152 @@ export default function StarssaStudents() {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Telegram Message Modal */}
+        {selectedStudentForMsg && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
+            <div className="bg-white p-6 sm:p-7 rounded-3xl shadow-2xl w-full max-w-lg border border-slate-100">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center text-xl font-bold">
+                    ✈️
+                  </div>
+                  <div>
+                    <h2 className="text-base sm:text-lg font-extrabold text-slate-900">
+                      O'quvchiga Telegram orqali xabar
+                    </h2>
+                    <p className="text-xs text-slate-500 font-medium">
+                      {selectedStudentForMsg.full_name} ({selectedStudentForMsg.group_name})
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedStudentForMsg(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-sm cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {msgToast && (
+                <div className={`p-3 rounded-xl mb-3 text-xs font-medium flex items-center gap-2 ${
+                  msgToast.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
+                }`}>
+                  <span>{msgToast.type === 'success' ? '✅' : '⚠️'}</span>
+                  <span>{msgToast.text}</span>
+                </div>
+              )}
+
+              {/* Target selector */}
+              <div className="space-y-2 mb-3.5">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Xabar yuborish usuli
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMsgTarget('group')}
+                    className={`p-3 rounded-xl text-left border transition text-xs font-semibold cursor-pointer ${
+                      msgTarget === 'group'
+                        ? 'bg-sky-50 border-sky-500 text-sky-800 ring-2 ring-sky-500/20'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="font-bold flex items-center gap-1.5 mb-0.5">
+                      <span>👥</span>
+                      <span>Guruhga yuborish</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-normal">
+                      O'quvchilar guruhiga uning nomini belgilab jo'natadi
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setMsgTarget('direct')}
+                    className={`p-3 rounded-xl text-left border transition text-xs font-semibold cursor-pointer ${
+                      msgTarget === 'direct'
+                        ? 'bg-sky-50 border-sky-500 text-sky-800 ring-2 ring-sky-500/20'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="font-bold flex items-center gap-1.5 mb-0.5">
+                      <span>👤</span>
+                      <span>Shaxsiy (Lichka)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-normal">
+                      O'quvchining shaxsiy Telegramiga bot orqali
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick message templates */}
+              <div className="space-y-1.5 mb-3.5">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Tezkor andozalar
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "⚠️ Darsga kechikmasdan, o'z vaqtida keling!",
+                    "📚 Ertangi uyga vazifani bajarib keling!",
+                    "📞 Darsdan so'ng kurator xonasiga uchrashing!",
+                    "📝 Dars qoldirish sababini ma'lum qiling!"
+                  ].map((tmpl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setMsgText(tmpl)}
+                      className="text-[11px] bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 px-2.5 py-1 rounded-lg transition font-medium cursor-pointer"
+                    >
+                      {tmpl}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Message textarea */}
+              <div className="mb-4">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Xabar matni *
+                </label>
+                <textarea
+                  rows={3}
+                  value={msgText}
+                  onChange={e => setMsgText(e.target.value)}
+                  placeholder="O'quvchiga yubormoqchi bo'lgan xabaringizni yozing..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-800 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-sky-500 focus:border-transparent transition resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setSelectedStudentForMsg(null)}
+                  className="px-4 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-semibold text-sm transition cursor-pointer"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="button"
+                  disabled={msgSending || !msgText.trim()}
+                  onClick={handleSendMessage}
+                  className="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white rounded-xl font-bold text-sm shadow-md shadow-sky-500/20 active:scale-95 transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  {msgSending ? (
+                    <span>Yuborilmoqda...</span>
+                  ) : (
+                    <>
+                      <span>Yuborish</span>
+                      <span>✈️</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>

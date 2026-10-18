@@ -215,6 +215,14 @@ export default function TelegramProfilePage() {
                   <span>Boshqa o'quvchini qidirish</span>
                 </button>
 
+                <a
+                  href="/login"
+                  className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-medium rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-md"
+                >
+                  <span>🌐</span>
+                  <span>Tizimga kirish (Sayt)</span>
+                </a>
+
                 <button
                   onClick={handleClose}
                   className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-md"
@@ -225,6 +233,16 @@ export default function TelegramProfilePage() {
               </div>
             </div>
           )}
+
+          <div className="text-center pt-2">
+            <a
+              href="/login"
+              className="inline-flex items-center gap-1.5 text-xs text-indigo-300 hover:text-white underline underline-offset-4"
+            >
+              <span>🌐</span>
+              <span>Saytga to'g'ridan-to'g'ri kirish (Login)</span>
+            </a>
+          </div>
         </div>
 
         {/* Footer */}

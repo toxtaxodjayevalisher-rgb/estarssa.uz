@@ -380,6 +380,24 @@ export async function GET(req: Request) {
     return NextResponse.json({ demo_help_sent: true, result });
   }
 
+  if (action === 'setMenuButton') {
+    const res = await fetch(`https://api.telegram.org/bot${token}/setChatMenuButton`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        menu_button: {
+          type: 'web_app',
+          text: 'Tizimga kirish',
+          web_app: {
+            url: 'https://e-starssauz.netlify.app/login'
+          }
+        }
+      })
+    });
+    const data = await res.json();
+    return NextResponse.json(data);
+  }
+
   return NextResponse.json({
     status: 'active',
     description: 'E-Starssa Telegram Webhook handler',

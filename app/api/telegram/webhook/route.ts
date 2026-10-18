@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 const token = process.env.TELEGRAM_BOT_TOKEN || '8983797302:AAHrMF0yZQ0qOgRGgE96SL6nV5hMKPdD_p4';
+const STUDENT_GROUP_ID = '-1004395732727';
 
 export const STARSSA_INFO_TEXT = `🌟 <b>E-STARSSA Tizimi Haqida Ma'lumot</b>
 
@@ -21,6 +22,63 @@ Assalomu alaykum!
 
 <i>Tartib-intizom va darslarga mas'uliyat bilan yondashing!</i>`;
 
+export const BOT_MENU_KEYBOARD = {
+  keyboard: [
+    [
+      { text: '📱 Telefon raqamni yuborish', request_contact: true }
+    ],
+    [
+      { text: '✍️ Uyga vazifani o\'zi kiritish' },
+      { text: '🕵️ Starssaga anonim xabar' }
+    ],
+    [
+      { text: '📚 Oxirgi vazifalar (/hw)' }
+    ]
+  ],
+  resize_keyboard: true,
+  is_persistent: true
+};
+
+const CANCEL_KEYBOARD = {
+  keyboard: [
+    [{ text: '❌ Bekor qilish (/cancel)' }]
+  ],
+  resize_keyboard: true,
+  one_time_keyboard: true
+};
+
+async function getBotSession(chatId: string | number) {
+  const cId = String(chatId);
+  try {
+    let session = await prisma.botSession.findUnique({ where: { chat_id: cId } });
+    if (!session) {
+      session = await prisma.botSession.create({
+        data: { chat_id: cId, state: 'IDLE' }
+      });
+    }
+    return session;
+  } catch (e) {
+    console.error('getBotSession error:', e);
+    return { chat_id: cId, state: 'IDLE', student_name: null, group_name: null };
+  }
+}
+
+async function updateBotSession(
+  chatId: string | number,
+  data: { state?: string; data?: string; student_name?: string; group_name?: string }
+) {
+  const cId = String(chatId);
+  try {
+    return await prisma.botSession.upsert({
+      where: { chat_id: cId },
+      update: data,
+      create: { chat_id: cId, ...data }
+    });
+  } catch (e) {
+    console.error('updateBotSession error:', e);
+    return null;
+  }
+}
 
 async function getLatestHomeworkMessage(groupName?: string) {
   const where: any = { status: 'ACTIVE' };
@@ -104,6 +162,28 @@ async function sendTelegramReply(
 async function sendHomeworkReply(chatId: string | number, replyToMessageId?: number, groupName?: string) {
   const { text, imageUrl } = await getLatestHomeworkMessage(groupName);
 
+  if (imageUrl && imageUrl.startsWith('telegram:')) {
+    const fileId = imageUrl.replace('telegram:', '');
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          photo: fileId,
+          caption: text,
+          parse_mode: 'HTML',
+          reply_parameters: replyToMessageId ? { message_id: replyToMessageId } : undefined
+        })
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (err) {
+      console.error('Error sending telegram photo file_id in homework:', err);
+    }
+  }
+
   if (imageUrl && imageUrl.startsWith('data:image/')) {
     try {
       const base64Data = imageUrl.split(';base64,').pop();
@@ -171,7 +251,6 @@ async function handleHelpCommand(
   });
 
   const starssaChatIds = new Set<string>();
-  // Foydalanuvchi talabiga ko'ra Starssalar lichkasi:
   starssaChatIds.add('6820579298'); // Mohinur lichkasi
   starssaChatIds.add('1973751873'); // Alisher lichkasi
 
@@ -199,6 +278,71 @@ async function handleHelpCommand(
   );
 }
 
+async function handleContact(chatId: string | number, contact: any, messageId?: number) {
+  const rawPhone = contact.phone_number || '';
+  const cleanPhone = rawPhone.replace(/\D/g, '');
+  const phoneSuffix = cleanPhone.length >= 7 ? cleanPhone.slice(-9) : cleanPhone;
+
+  const allUsers = await prisma.user.findMany();
+  const allStudents = await prisma.student.findMany();
+
+  let matched: any = null;
+
+  if (phoneSuffix) {
+    const uMatch = allUsers.find(u => (u.phone || '').replace(/\D/g, '').endsWith(phoneSuffix));
+    if (uMatch) {
+      matched = {
+        name: uMatch.full_name,
+        group: uMatch.assigned_group || 'Barchasi',
+        role: uMatch.role === 'STARSSA' ? 'Starssa (Guruh sardori)' : uMatch.role === 'USTOZ' ? 'Ustoz (O\'qituvchi)' : 'Admin (Boshqaruvchi)',
+        phone: uMatch.phone || rawPhone
+      };
+      await prisma.user.update({
+        where: { id: uMatch.id },
+        data: { telegram_id: String(chatId) }
+      }).catch(() => {});
+    } else {
+      const sMatch = allStudents.find(s => (s.phone || '').replace(/\D/g, '').endsWith(phoneSuffix));
+      if (sMatch) {
+        const isStarssa = allUsers.some(u =>
+          u.role === 'STARSSA' && (
+            u.full_name.toLowerCase().includes(sMatch.full_name.toLowerCase()) ||
+            sMatch.full_name.toLowerCase().includes(u.full_name.toLowerCase())
+          )
+        );
+        matched = {
+          name: sMatch.full_name,
+          group: sMatch.group_name,
+          role: isStarssa ? 'Starssa (Guruh sardori)' : "O'quvchi",
+          phone: sMatch.phone || rawPhone
+        };
+      }
+    }
+  }
+
+  if (matched) {
+    await updateBotSession(chatId, {
+      student_name: matched.name,
+      group_name: matched.group,
+      state: 'IDLE'
+    });
+
+    const isStudent = matched.role === "O'quvchi";
+    let roleNotice = '';
+    if (isStudent) {
+      roleNotice = `\n\n📌 <b>Hurmatli o'quvchi!</b> Saytga faqat Starssa, Ustoz va Adminlar kira oladi. O'quvchilar saytdan ro'yxatdan o'tmaydi. Barcha uyga vazifalar va e'lonlar guruhingizda berib boriladi.`;
+    } else {
+      roleNotice = `\n\n🔐 <b>Siz tizim mas'ulisiz:</b> Saytga kirish uchun quyidagi havoladan foydalaning:\n👉 https://e-starssauz.netlify.app/login`;
+    }
+
+    const replyText = `✅ <b>Sizning ma'lumotlaringiz:</b>\n\n👤 <b>F.I.SH:</b> ${matched.name}\n👥 <b>Guruhi:</b> <b>${matched.group}</b>\n🎓 <b>Roli:</b> <b>${matched.role}</b>\n📞 <b>Telefon:</b> ${matched.phone}${roleNotice}`;
+    return await sendTelegramReply(chatId, replyText, messageId, BOT_MENU_KEYBOARD);
+  } else {
+    const notFoundText = `❌ <b>Kiritilgan telefon raqami (+${cleanPhone}) bo'yicha tizimda ma'lumot topilmadi.</b>\n\nIltimos, agar raqamingiz boshqa formatda kiritilgan bo'lsa, Familiya va Ismingizni yozib yuboring.`;
+    return await sendTelegramReply(chatId, notFoundText, messageId, BOT_MENU_KEYBOARD);
+  }
+}
+
 async function handlePrivateSearch(chatId: string | number, text: string, messageId?: number) {
   const cleanPhone = text.replace(/\D/g, '');
   const phoneSuffix = cleanPhone.length >= 7 ? cleanPhone.slice(-9) : '';
@@ -218,6 +362,10 @@ async function handlePrivateSearch(chatId: string | number, text: string, messag
         role: uMatch.role === 'STARSSA' ? 'Starssa (Guruh sardori)' : uMatch.role === 'USTOZ' ? 'Ustoz (O\'qituvchi)' : 'Admin',
         phone: uMatch.phone
       };
+      await prisma.user.update({
+        where: { id: uMatch.id },
+        data: { telegram_id: String(chatId) }
+      }).catch(() => {});
     } else {
       const sMatch = allStudents.find(s => (s.phone || '').replace(/\D/g, '').endsWith(phoneSuffix));
       if (sMatch) {
@@ -266,6 +414,12 @@ async function handlePrivateSearch(chatId: string | number, text: string, messag
   }
 
   if (matched) {
+    await updateBotSession(chatId, {
+      student_name: matched.name,
+      group_name: matched.group,
+      state: 'IDLE'
+    });
+
     const isStudent = matched.role === "O'quvchi";
     let roleNotice = '';
     if (isStudent) {
@@ -275,10 +429,10 @@ async function handlePrivateSearch(chatId: string | number, text: string, messag
     }
 
     const replyText = `✅ <b>Sizning ma'lumotlaringiz:</b>\n\n👤 <b>F.I.SH:</b> ${matched.name}\n👥 <b>Guruhi:</b> <b>${matched.group}</b>\n🎓 <b>Roli:</b> <b>${matched.role}</b>\n📞 <b>Telefon:</b> ${matched.phone || 'Kiritilmagan'}${roleNotice}`;
-    await sendTelegramReply(chatId, replyText, messageId);
+    await sendTelegramReply(chatId, replyText, messageId, BOT_MENU_KEYBOARD);
   } else if (cleanPhone.length >= 7 || qName.length >= 3) {
     const notFoundText = `❌ <b>Kiritilgan ma'lumot bo'yicha tizimda ma'lumot topilmadi.</b>\n\nIltimos, Familiya va Ismingizni yoki telefon raqamingizni to'g'ri yozganingizni tekshirib qaytadan yuboring:`;
-    await sendTelegramReply(chatId, notFoundText, messageId);
+    await sendTelegramReply(chatId, notFoundText, messageId, BOT_MENU_KEYBOARD);
   }
 }
 
@@ -287,30 +441,212 @@ export async function POST(req: Request) {
     const update = await req.json();
 
     const message = update.message || update.edited_message;
-    if (!message || !message.text) {
+    if (!message) {
       return NextResponse.json({ ok: true });
     }
 
     const chatId = message.chat?.id;
-    const text = message.text.trim();
+    const isPrivate = message.chat?.type === 'private';
+    const text = (message.text || '').trim();
     const lowerText = text.toLowerCase();
+    const contact = message.contact;
+    const photo = message.photo;
+    const caption = (message.caption || '').trim();
 
-    // /start, /start@estarssaBot
-    if (lowerText === '/start' || lowerText.startsWith('/start ') || lowerText.startsWith('/start@')) {
-      const welcomeText = `🌟 <b>Assalomu alaykum! E-STARSSA tizimiga xush kelibsiz!</b>\n\nℹ️ <b>Muhim eslatma:</b> Saytga faqat Starssa (guruh sardori), Ustoz va Adminlar kira oladi. O'quvchilar saytdan ro'yxatdan o'tmaydi.\n\n🔍 <b>Guruh va rolingizni bilish uchun:</b>\nIltimos, <b>F.I.SH (Familiya, Ism)</b> yoki <b>telefon raqamingizni</b> shu yerga yozib yuboring:`;
-      await sendTelegramReply(chatId, welcomeText, message.message_id);
-    } 
+    // 1. Shaxsiy chatda telefon raqam jo'natilganda (request_contact)
+    if (isPrivate && contact) {
+      await handleContact(chatId, contact, message.message_id);
+      return NextResponse.json({ ok: true });
+    }
+
+    if (isPrivate) {
+      const session = await getBotSession(chatId);
+
+      // Cancel check
+      if (
+        lowerText === '/cancel' || 
+        lowerText === '❌ bekor qilish' || 
+        lowerText === '❌ bekor qilish (/cancel)' || 
+        lowerText === 'bekor qilish'
+      ) {
+        await updateBotSession(chatId, { state: 'IDLE' });
+        await sendTelegramReply(chatId, "❌ Jarayon bekor qilindi.", message.message_id, BOT_MENU_KEYBOARD);
+        return NextResponse.json({ ok: true });
+      }
+
+      // 2. /start buyrug'i
+      if (lowerText === '/start' || lowerText.startsWith('/start ') || lowerText.startsWith('/start@')) {
+        await updateBotSession(chatId, { state: 'IDLE' });
+        const welcomeText = `🌟 <b>Assalomu alaykum! E-STARSSA tizimiga xush kelibsiz!</b>\n\n` +
+          `ℹ️ <b>Muhim eslatma:</b> Saytga faqat Starssa (guruh sardori), Ustoz va Adminlar kira oladi. O'quvchilar saytdan ro'yxatdan o'tmaydi.\n\n` +
+          `👇 <b>Quyidagi tugmalardan foydalanishingiz mumkin:</b>\n` +
+          `📱 <b>Telefon raqamni yuborish</b> — guruh va rolingizni bir zumda bilish\n` +
+          `✍️ <b>Uyga vazifani o'zi kiritish</b> — yangi vazifa kiritish (ismingiz ko'rsatiladi)\n` +
+          `🕵️ <b>Starssaga anonim xabar</b> — sardorga anonim murojaat qilish (javob sayt orqali beriladi)\n\n` +
+          `<i>Shuningdek, F.I.SH yoki telefoningizni to'g'ridan-to'g'ri yozib yuborishingiz ham mumkin!</i>`;
+        await sendTelegramReply(chatId, welcomeText, message.message_id, BOT_MENU_KEYBOARD);
+        return NextResponse.json({ ok: true });
+      }
+
+      // 3. "✍️ Uyga vazifa kiritish" tugmasi yoki buyrug'i
+      if (
+        lowerText === '✍️ uyga vazifani o\'zi kiritish' ||
+        lowerText === '✍️ uyga vazifa kiritish' ||
+        lowerText === 'uyga vazifa kiritish' ||
+        lowerText === '/add_hw' ||
+        lowerText === '/new_hw'
+      ) {
+        await updateBotSession(chatId, { state: 'WAITING_HOMEWORK' });
+        const prompt = `✍️ <b>Uyga vazifa kiritish</b>\n\n` +
+          `Iltimos, vazifa matnini yuboring.\n\n` +
+          `<b>Format namunasi:</b>\n` +
+          `Fan: [Fan nomi]\n` +
+          `Vazifa: [Uyga vazifa tafsiloti]\n\n` +
+          `<i>(Agar daftardagi vazifa rasmi bo'lsa, rasmni izohi (caption) bilan birga yuborishingiz mumkin)</i>\n\n` +
+          `<i>Bekor qilish: /cancel</i>`;
+        await sendTelegramReply(chatId, prompt, message.message_id, CANCEL_KEYBOARD);
+        return NextResponse.json({ ok: true });
+      }
+
+      // 4. "🕵️ Starssaga anonim xabar" tugmasi yoki buyrug'i
+      if (
+        lowerText === '🕵️ starssaga anonim xabar yuborish' ||
+        lowerText === '🕵️ starssaga anonim xabar' ||
+        lowerText === 'starssaga anonim xabar' ||
+        lowerText === '/anonim' ||
+        lowerText === '/anonymous'
+      ) {
+        await updateBotSession(chatId, { state: 'WAITING_ANON_MSG' });
+        const prompt = `🕵️ <b>Starssaga anonim xabar yuborish</b>\n\n` +
+          `Guruh sardoriga (Starssa) yetkazmoqchi bo'lgan taklif, savol yoki murojaatingizni yozib yuboring.\n\n` +
+          `🔒 <b>Maxfiylik kafolatlangan:</b> Sizning shaxsingiz (ism, familiya, profil) Starssaga mutlaqo ko'rinmaydi. Starssa sayt portali orqali javob yozganda, javob bot orqali sizga yetkaziladi.\n\n` +
+          `✍️ Anonim xabaringizni yozing:\n\n` +
+          `<i>Bekor qilish: /cancel</i>`;
+        await sendTelegramReply(chatId, prompt, message.message_id, CANCEL_KEYBOARD);
+        return NextResponse.json({ ok: true });
+      }
+
+      // 5. WAITING_ANON_MSG holatida xabar kelganda
+      if (session.state === 'WAITING_ANON_MSG' && (text || caption)) {
+        const msgContent = text || caption;
+        const groupName = session.group_name || '104-guruh';
+
+        await prisma.anonymousMessage.create({
+          data: {
+            telegram_chat_id: String(chatId),
+            sender_name: "Anonim o'quvchi",
+            group_name: groupName,
+            message: msgContent,
+            status: 'PENDING'
+          }
+        });
+
+        await updateBotSession(chatId, { state: 'IDLE' });
+
+        // Foydalanuvchiga tasdiq
+        await sendTelegramReply(
+          chatId,
+          `✅ <b>Anonim xabaringiz Starssaga yetkazildi!</b>\n\nStarssa sayt portali orqali javob berishi bilanoq, sizga ushbu bot orqali xabar keladi.`,
+          message.message_id,
+          BOT_MENU_KEYBOARD
+        );
+
+        // Starssalarga bildirishnoma (Mohinur va Alisher)
+        const starssaAlert = `🔔 <b>YANGI ANONIM XABAR KELDI!</b>\n\n` +
+          `👥 Guruh: <b>${groupName}</b>\n\n` +
+          `📩 Xabar:\n<i>«${msgContent}»</i>\n\n` +
+          `Javob berish uchun Starssa portaliga kiring:\n` +
+          `👉 https://e-starssa.netlify.app/starssa/anonymous-messages`;
+
+        const starssaChatIds = ['6820579298', '1973751873'];
+        for (const sId of starssaChatIds) {
+          await sendTelegramReply(sId, starssaAlert);
+        }
+
+        return NextResponse.json({ ok: true });
+      }
+
+      // 6. WAITING_HOMEWORK holatida xabar yoki rasm kelganda
+      if (session.state === 'WAITING_HOMEWORK' && (text || photo || caption)) {
+        const studentName = session.student_name ||
+          `${message.from?.first_name || "O'quvchi"} ${message.from?.last_name || ''}`.trim();
+        const groupName = session.group_name || '104-guruh';
+
+        const rawContent = text || caption || 'Uyga vazifa biriktirildi';
+        let subject = 'Umumiy';
+        let content = rawContent;
+
+        const fanMatch = rawContent.match(/fan:\s*([^\n]+)/i);
+        const vazifaMatch = rawContent.match(/vazifa:\s*([\s\S]+)/i);
+
+        if (fanMatch) {
+          subject = fanMatch[1].trim();
+        }
+        if (vazifaMatch) {
+          content = vazifaMatch[1].trim();
+        }
+
+        let photoFileId: string | null = null;
+        if (photo && photo.length > 0) {
+          photoFileId = photo[photo.length - 1].file_id;
+        }
+
+        // Bazaga saqlash
+        await prisma.homework.create({
+          data: {
+            date: new Date(),
+            subject: subject,
+            content: content,
+            group_name: groupName,
+            created_by: `${studentName} (O'quvchi)`,
+            image_url: photoFileId ? `telegram:${photoFileId}` : null,
+            status: 'ACTIVE'
+          }
+        });
+
+        await updateBotSession(chatId, { state: 'IDLE' });
+
+        // O'quvchilar guruhiga xabar jo'natish
+        const groupPostText = `📚 <b>Yangi uyga vazifa kiritildi!</b>\n\n` +
+          `📖 Fan: <b>${subject}</b>\n` +
+          `📝 Vazifa:\n${content}\n\n` +
+          `👤 Kiritdi: <b>${studentName} (O'quvchi)</b>`;
+
+        if (photoFileId) {
+          try {
+            await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: STUDENT_GROUP_ID,
+                photo: photoFileId,
+                caption: groupPostText,
+                parse_mode: 'HTML'
+              })
+            });
+          } catch (e) {
+            await sendTelegramReply(STUDENT_GROUP_ID, groupPostText);
+          }
+        } else {
+          await sendTelegramReply(STUDENT_GROUP_ID, groupPostText);
+        }
+
+        const confirmText = `✅ <b>Uyga vazifa muvaffaqiyatli qabul qilindi va guruhga yuborildi!</b>\n\n` +
+          `📖 Fan: <b>${subject}</b>\n` +
+          `👤 Muallif: <b>${studentName} (O'quvchi)</b>`;
+        await sendTelegramReply(chatId, confirmText, message.message_id, BOT_MENU_KEYBOARD);
+        return NextResponse.json({ ok: true });
+      }
+    }
+
     // /hw, /hw@estarssaBot, /vazifa, /homework
-    else if (
+    if (
       lowerText === '/hw' ||
       lowerText.startsWith('/hw ') ||
       lowerText.startsWith('/hw@') ||
       lowerText === '/vazifa' ||
-      lowerText.startsWith('/vazifa ') ||
-      lowerText.startsWith('/vazifa@') ||
-      lowerText === '/homework' ||
-      lowerText.startsWith('/homework ') ||
-      lowerText.startsWith('/homework@')
+      lowerText === '📚 oxirgi vazifalar (/hw)' ||
+      lowerText === 'oxirgi vazifalar'
     ) {
       await sendHomeworkReply(chatId, message.message_id);
     }
@@ -319,14 +655,12 @@ export async function POST(req: Request) {
       lowerText === '/help' ||
       lowerText.startsWith('/help ') ||
       lowerText.startsWith('/help@') ||
-      lowerText === '/yordam' ||
-      lowerText.startsWith('/yordam ') ||
-      lowerText.startsWith('/yordam@')
+      lowerText === '/yordam'
     ) {
       await handleHelpCommand(chatId, message.message_id, message.from, message.chat?.title);
     }
     // Shaxsiy chatda ism yoki telefon kiritilsa
-    else if (message.chat?.type === 'private' && !text.startsWith('/')) {
+    else if (isPrivate && text && !text.startsWith('/')) {
       await handlePrivateSearch(chatId, text, message.message_id);
     }
 

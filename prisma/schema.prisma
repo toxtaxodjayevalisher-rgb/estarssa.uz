@@ -154,3 +154,25 @@ model Group {
   name       String   @unique
   created_at DateTime @default(now())
 }
+
+model BotSession {
+  chat_id      String   @id
+  state        String   @default("IDLE") // IDLE, WAITING_HOMEWORK, WAITING_ANON_MSG
+  data         String?
+  student_name String?
+  group_name   String?
+  updated_at   DateTime @updatedAt
+}
+
+model AnonymousMessage {
+  id               String   @id @default(uuid())
+  telegram_chat_id String
+  sender_name      String?  @default("Anonim o'quvchi")
+  group_name       String?
+  message          String
+  reply            String?
+  replied_at       DateTime?
+  replied_by       String?
+  status           String   @default("PENDING") // PENDING, REPLIED
+  created_at       DateTime @default(now())
+}

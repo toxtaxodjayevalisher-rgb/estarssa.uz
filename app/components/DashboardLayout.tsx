@@ -21,6 +21,7 @@ const navItemsByRole: Record<Role, NavItem[]> = {
     { href: '/starssa/homework', label: 'Uyga Vazifa', shortLabel: 'Vazifa', icon: '📚' },
     { href: '/starssa/students', label: "O'quvchilar", shortLabel: "O'quvchi", icon: '👥' },
     { href: '/starssa/announcements', label: "E'lonlar", shortLabel: "E'lon", icon: '📢' },
+    { href: '/starssa/anonymous-messages', label: "Anonim Xabarlar", shortLabel: "Anonim", icon: '🕵️' },
   ],
   USTOZ: [
     { href: '/ustoz', label: 'Asosiy', shortLabel: 'Asosiy', icon: '🏠' },

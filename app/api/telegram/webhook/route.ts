@@ -21,29 +21,6 @@ Assalomu alaykum!
 
 <i>Tartib-intizom va darslarga mas'uliyat bilan yondashing!</i>`;
 
-export function getStartKeyboard(isPrivate: boolean = false) {
-  return {
-    inline_keyboard: [
-      [
-        isPrivate
-          ? {
-              text: '📱 Oynani ochish (F.I.SH & Guruh)',
-              web_app: { url: 'https://e-starssa.netlify.app/telegram/profile' }
-            }
-          : {
-              text: '📱 Oynani ochish (F.I.SH & Guruh)',
-              url: 'https://e-starssa.netlify.app/telegram/profile'
-            }
-      ],
-      [
-        {
-          text: '🌐 E-STARSSA Saytiga kirish',
-          url: 'https://e-starssa.netlify.app/'
-        }
-      ]
-    ]
-  };
-}
 
 async function getLatestHomeworkMessage(groupName?: string) {
   const where: any = { status: 'ACTIVE' };
@@ -298,10 +275,10 @@ async function handlePrivateSearch(chatId: string | number, text: string, messag
     }
 
     const replyText = `✅ <b>Sizning ma'lumotlaringiz:</b>\n\n👤 <b>F.I.SH:</b> ${matched.name}\n👥 <b>Guruhi:</b> <b>${matched.group}</b>\n🎓 <b>Roli:</b> <b>${matched.role}</b>\n📞 <b>Telefon:</b> ${matched.phone || 'Kiritilmagan'}${roleNotice}`;
-    await sendTelegramReply(chatId, replyText, messageId, getStartKeyboard(true));
+    await sendTelegramReply(chatId, replyText, messageId);
   } else if (cleanPhone.length >= 7 || qName.length >= 3) {
     const notFoundText = `❌ <b>Kiritilgan ma'lumot bo'yicha tizimda ma'lumot topilmadi.</b>\n\nIltimos, Familiya va Ismingizni yoki telefon raqamingizni to'g'ri yozganingizni tekshirib qaytadan yuboring:`;
-    await sendTelegramReply(chatId, notFoundText, messageId, getStartKeyboard(true));
+    await sendTelegramReply(chatId, notFoundText, messageId);
   }
 }
 
@@ -315,14 +292,13 @@ export async function POST(req: Request) {
     }
 
     const chatId = message.chat?.id;
-    const isPrivate = message.chat?.type === 'private';
     const text = message.text.trim();
     const lowerText = text.toLowerCase();
 
     // /start, /start@estarssaBot
     if (lowerText === '/start' || lowerText.startsWith('/start ') || lowerText.startsWith('/start@')) {
-      const welcomeText = `🌟 <b>Assalomu alaykum! E-STARSSA tizimiga xush kelibsiz!</b>\n\nℹ️ <b>Muhim eslatma:</b> Saytga faqat Starssa (guruh sardori), Ustoz va Adminlar kira oladi. O'quvchilar saytdan ro'yxatdan o'tmaydi.\n\n🔍 <b>Guruh va rolingizni bilish uchun:</b>\nIltimos, <b>F.I.SH (Familiya, Ism)</b> yoki <b>telefon raqamingizni</b> shu yerga yozib yuboring (yoki quyidagi tugma orqali oynani oching):`;
-      await sendTelegramReply(chatId, welcomeText, message.message_id, getStartKeyboard(isPrivate));
+      const welcomeText = `🌟 <b>Assalomu alaykum! E-STARSSA tizimiga xush kelibsiz!</b>\n\nℹ️ <b>Muhim eslatma:</b> Saytga faqat Starssa (guruh sardori), Ustoz va Adminlar kira oladi. O'quvchilar saytdan ro'yxatdan o'tmaydi.\n\n🔍 <b>Guruh va rolingizni bilish uchun:</b>\nIltimos, <b>F.I.SH (Familiya, Ism)</b> yoki <b>telefon raqamingizni</b> shu yerga yozib yuboring:`;
+      await sendTelegramReply(chatId, welcomeText, message.message_id);
     } 
     // /hw, /hw@estarssaBot, /vazifa, /homework
     else if (
@@ -380,8 +356,7 @@ export async function GET(req: Request) {
 
   if (action === 'demo') {
     const targetChat = searchParams.get('chat_id') || '-1004395732727';
-    const isPriv = !String(targetChat).startsWith('-');
-    const result = await sendTelegramReply(targetChat, STARSSA_INFO_TEXT, undefined, getStartKeyboard(isPriv));
+    const result = await sendTelegramReply(targetChat, STARSSA_INFO_TEXT);
     return NextResponse.json({ demo_sent: true, result });
   }
 

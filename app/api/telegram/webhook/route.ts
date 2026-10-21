@@ -11,16 +11,13 @@ Assalomu alaykum!
 <b>E-STARSSA</b> — bu guruh davomati, o'quv intizomi va kundalik faoliyatni nazorat qilish uchun yaratilgan qulay elektron platforma.
 
 📌 <b>Asosiy imkoniyatlar:</b>
-▫️ <b>📚 Uyga vazifalar:</b> Fanlar bo'yicha berilgan barcha topshiriqlar, darslik rasmlari va vazifalar shu guruhga muntazam yuboriladi.
-▫️ <b>📢 E'lonlar va yangiliklar:</b> Muhim sanalar, tadbirlar va guruhga oid rasmiy xabarlar tezkor yetkaziladi.
-▫️ <b>📋 Davomat nazorati:</b> Starssa (guruh sardori) davomatni elektron shaklda kiritadi, ustoz tekshirib tasdiqlaydi.
-▫️ <b>⚠️ Intizom monitoringi:</b> Darsga kechikishlar, sababsiz kelmasliklar va qoidabuzarliklar hisobi yuritiladi.
-▫️ <b>🎉 Tug'ilgan kunlar:</b> O'quvchilarning tavallud kunlari tizim orqali eslatib boriladi.
+▫️ 📚 <b>Uyga vazifalar:</b> Fanlar bo'yicha berilgan barcha topshiriqlar shu guruhga muntazam yuboriladi.
+▫️ 📢 <b>E'lonlar va yangiliklar:</b> Muhim sanalar va tadbirlar yetkaziladi.
+▫️ 📋 <b>Davomat nazorati:</b> Starssa davomatni kiritadi, ustoz tasdiqlaydi.
+▫️ ⚠️ <b>Intizom monitoringi:</b> Darsga kechikishlar va intizom hisobi yuritiladi.
 
 🌐 <b>Platforma veb-sayti:</b>
-👉 https://e-starssa.netlify.app/
-
-<i>Tartib-intizom va darslarga mas'uliyat bilan yondashing!</i>`;
+👉 https://e-starssa.netlify.app/`;
 
 export const BOT_MENU_KEYBOARD = {
   keyboard: [
@@ -658,6 +655,16 @@ export async function POST(req: Request) {
       lowerText === '/yordam'
     ) {
       await handleHelpCommand(chatId, message.message_id, message.from, message.chat?.title);
+    }
+    // /start, /start@estarssaBot, /info guruhda yuborilganda
+    else if (
+      lowerText === '/start' ||
+      lowerText.startsWith('/start ') ||
+      lowerText.startsWith('/start@') ||
+      lowerText === '/info' ||
+      lowerText.startsWith('/info@')
+    ) {
+      await sendTelegramReply(chatId, STARSSA_INFO_TEXT, message.message_id);
     }
     // Shaxsiy chatda ism yoki telefon kiritilsa
     else if (isPrivate && text && !text.startsWith('/')) {

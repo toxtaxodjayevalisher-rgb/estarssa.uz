@@ -156,6 +156,20 @@ async function sendTelegramReply(
   }
 }
 
+async function deleteTelegramMessage(chatId: string | number, messageId: number) {
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/deleteMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, message_id: messageId })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error deleting telegram message:', error);
+    return null;
+  }
+}
+
 async function sendHomeworkReply(chatId: string | number, replyToMessageId?: number, groupName?: string) {
   const { text, imageUrl } = await getLatestHomeworkMessage(groupName);
 
@@ -449,6 +463,30 @@ export async function POST(req: Request) {
     const contact = message.contact;
     const photo = message.photo;
     const caption = (message.caption || '').trim();
+
+    // 0. Guruhda spam, reklama va begona kanallarni tozalash (Anti-Spam)
+    if (!isPrivate) {
+      const fullText = (text + ' ' + caption).toLowerCase();
+      const isSpam =
+        fullText.includes('anonymouspumptrades') ||
+        (fullText.includes('pump') && fullText.includes('trade')) ||
+        fullText.includes('to use this bot, you must join') ||
+        fullText.includes('1xbet') ||
+        fullText.includes('kazino') ||
+        fullText.includes('casino') ||
+        (fullText.includes('t.me/') && !fullText.includes('estarssabot'));
+
+      if (isSpam) {
+        await deleteTelegramMessage(chatId, message.message_id);
+        const sender = message.from?.username 
+          ? `@${message.from.username}` 
+          : `${message.from?.first_name || "Foydalanuvchi"}`;
+        const warn = `⚠️ <b>${sender}</b>, ushbu guruhda reklama, begona botlar va noo'rin havolalar yuborish taqiqlangan!\n\n<i>Xabar o'chirildi.</i>`;
+        await sendTelegramReply(chatId, warn);
+        return NextResponse.json({ ok: true });
+      }
+    }
+
 
     // 1. Shaxsiy chatda telefon raqam jo'natilganda (request_contact)
     if (isPrivate && contact) {

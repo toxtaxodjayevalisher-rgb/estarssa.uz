@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-const token = process.env.TELEGRAM_BOT_TOKEN || '8983797302:AAFBsLv62LUEQPsmqZCIzyTmXA_UIpJx5hQ';
+const CURRENT_BOT_TOKEN = '8983797302:AAFBsLv62LUEQPsmqZCIzyTmXA_UIpJx5hQ';
+const token = (process.env.TELEGRAM_BOT_TOKEN && !process.env.TELEGRAM_BOT_TOKEN.includes('AAHrMF0y'))
+  ? process.env.TELEGRAM_BOT_TOKEN
+  : CURRENT_BOT_TOKEN;
 const STUDENT_GROUP_ID = '-1004395732727';
 
 export const STARSSA_INFO_TEXT = `🌟 <b>E-STARSSA Tizimi Haqida Ma'lumot</b>

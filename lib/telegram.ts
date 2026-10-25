@@ -1,7 +1,5 @@
-const CURRENT_BOT_TOKEN = '8983797302:AAFBsLv62LUEQPsmqZCIzyTmXA_UIpJx5hQ';
-const token = (process.env.TELEGRAM_BOT_TOKEN && !process.env.TELEGRAM_BOT_TOKEN.includes('AAHrMF0y'))
-  ? process.env.TELEGRAM_BOT_TOKEN
-  : CURRENT_BOT_TOKEN;
+export const TELEGRAM_BOT_TOKEN = '8983797302:AAFBsLv62LUEQPsmqZCIzyTmXA_UIpJx5hQ';
+const token = TELEGRAM_BOT_TOKEN;
 
 export const CHAT_IDS = process.env.TELEGRAM_CHAT_IDS
   ? process.env.TELEGRAM_CHAT_IDS.split(',').map(s => s.trim()).filter(Boolean)

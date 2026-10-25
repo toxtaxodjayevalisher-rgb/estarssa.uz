@@ -95,9 +95,7 @@ async function handleRequest(req: Request) {
 
     // Self-healing: verify and re-register webhook if missing
     try {
-      const botToken = (process.env.TELEGRAM_BOT_TOKEN && !process.env.TELEGRAM_BOT_TOKEN.includes('AAHrMF0y'))
-        ? process.env.TELEGRAM_BOT_TOKEN
-        : '8983797302:AAFBsLv62LUEQPsmqZCIzyTmXA_UIpJx5hQ';
+      const botToken = '8983797302:AAFBsLv62LUEQPsmqZCIzyTmXA_UIpJx5hQ';
       const whInfo = await fetch(`https://api.telegram.org/bot${botToken}/getWebhookInfo`).then(r => r.json());
       if (!whInfo?.result?.url) {
         await fetch(`https://api.telegram.org/bot${botToken}/setWebhook?url=https%3A%2F%2Fe-starssa.netlify.app%2Fapi%2Ftelegram%2Fwebhook`);

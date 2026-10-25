@@ -30,6 +30,10 @@ jobs:
   send-reminder:
     runs-on: ubuntu-latest
     steps:
+      - name: Ensure Telegram Webhook is active
+        run: |
+          curl -s -f "https://e-starssa.netlify.app/api/telegram/webhook?action=setWebhook" || true
+
       - name: Trigger Daily Reminder via API
         run: |
           TYPE="${{ github.event.inputs.type || 'auto' }}"

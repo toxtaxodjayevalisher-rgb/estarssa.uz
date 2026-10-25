@@ -93,6 +93,18 @@ async function handleRequest(req: Request) {
     const type = searchParams.get('type') || 'auto';
     const force = searchParams.get('force') === 'true';
 
+    // Self-healing: verify and re-register webhook if missing
+    try {
+      const botToken = process.env.TELEGRAM_BOT_TOKEN || '8983797302:AAHrMF0yZQ0qOgRGgE96SL6nV5hMKPdD_p4';
+      const whInfo = await fetch(`https://api.telegram.org/bot${botToken}/getWebhookInfo`).then(r => r.json());
+      if (!whInfo?.result?.url) {
+        await fetch(`https://api.telegram.org/bot${botToken}/setWebhook?url=https%3A%2F%2Fe-starssa.netlify.app%2Fapi%2Ftelegram%2Fwebhook`);
+        console.log('Self-healed Telegram webhook URL');
+      }
+    } catch (whErr) {
+      console.error('Webhook health check warning:', whErr);
+    }
+
     const { hour, minute, startUtc, endUtc } = getTashkentTime();
 
     if (type === 'auto') {

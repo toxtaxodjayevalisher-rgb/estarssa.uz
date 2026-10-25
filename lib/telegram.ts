@@ -1,4 +1,4 @@
-const token = process.env.TELEGRAM_BOT_TOKEN || '8983797302:AAHrMF0yZQ0qOgRGgE96SL6nV5hMKPdD_p4';
+const token = process.env.TELEGRAM_BOT_TOKEN || '8983797302:AAFBsLv62LUEQPsmqZCIzyTmXA_UIpJx5hQ';
 
 export const CHAT_IDS = process.env.TELEGRAM_CHAT_IDS
   ? process.env.TELEGRAM_CHAT_IDS.split(',').map(s => s.trim()).filter(Boolean)

@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: estarssa
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        value: 8983797302:AAFBsLv62LUEQPsmqZCIzyTmXA_UIpJx5hQ
+      - key: JWT_SECRET
+        generateValue: true

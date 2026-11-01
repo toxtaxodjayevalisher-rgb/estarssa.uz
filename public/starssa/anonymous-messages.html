@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anonim Xabarlar — E-STARSSA</title>
+  <link rel="icon" href="/icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/app.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+  <div id="layoutContainer" class="min-h-[100dvh] flex flex-col md:flex-row">
+    
+    <main class="flex-1 flex flex-col min-w-0 pb-20 md:pb-6 overflow-y-auto">
+      <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <span>🕵️</span> Anonim Xabarlar
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-500">O'quvchilardan bot orqali kelgan murojaatlar va javoblar</p>
+        </div>
+        <button onclick="loadMessages()" class="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition" title="Yangilash">
+          🔄
+        </button>
+      </header>
+
+      <div class="p-4 sm:p-8 space-y-6 max-w-4xl w-full mx-auto">
+        
+        <!-- Filter buttons -->
+        <div class="flex items-center gap-2">
+          <button id="btnAll" onclick="setFilter('ALL')" class="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-blue-600 text-white shadow-sm">Barchasi</button>
+          <button id="btnPending" onclick="setFilter('PENDING')" class="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">Javob kutilayotganlar</button>
+          <button id="btnReplied" onclick="setFilter('REPLIED')" class="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">Javob berilganlar</button>
+        </div>
+
+        <div id="messagesList" class="space-y-4">
+          <p class="text-sm text-slate-400">Xabarlar yuklanmoqda...</p>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let messages = [];
+    let currentFilter = 'ALL';
+
+    async function init() {
+      const user = await EStarssa.requireAuth(['STARSSA', 'ADMIN']);
+      if (!user) return;
+      EStarssa.renderLayout('/starssa/anonymous-messages', user.role, user);
+
+      loadMessages();
+    }
+
+    async function loadMessages() {
+      try {
+        const res = await fetch('/api/starssa/anonymous-messages');
+        const data = await res.json();
+        if (data.messages) {
+          messages = data.messages;
+          renderMessages();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function setFilter(f) {
+      currentFilter = f;
+      document.getElementById('btnAll').className = f === 'ALL' ? 'px-3.5 py-1.5 rounded-xl font-bold text-xs bg-blue-600 text-white shadow-sm' : 'px-3.5 py-1.5 rounded-xl font-bold text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+      document.getElementById('btnPending').className = f === 'PENDING' ? 'px-3.5 py-1.5 rounded-xl font-bold text-xs bg-blue-600 text-white shadow-sm' : 'px-3.5 py-1.5 rounded-xl font-bold text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+      document.getElementById('btnReplied').className = f === 'REPLIED' ? 'px-3.5 py-1.5 rounded-xl font-bold text-xs bg-blue-600 text-white shadow-sm' : 'px-3.5 py-1.5 rounded-xl font-bold text-xs bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+      renderMessages();
+    }
+
+    function renderMessages() {
+      const list = document.getElementById('messagesList');
+      const filtered = messages.filter(m => {
+        if (currentFilter === 'PENDING') return m.status === 'PENDING';
+        if (currentFilter === 'REPLIED') return m.status === 'REPLIED';
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<p class="p-8 text-center text-sm text-slate-400">Hech qanday anonim xabar topilmadi.</p>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(m => {
+        const d = new Date(m.created_at).toLocaleString('uz-UZ');
+        const isReplied = m.status === 'REPLIED';
+
+        return `
+          <div class="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm">🕵️</span>
+                <div>
+                  <p class="font-bold text-sm text-slate-900">${m.sender_name}</p>
+                  <p class="text-[11px] text-slate-400">${d} • ${m.group_name}</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold ${isReplied ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                ${isReplied ? 'Javob berilgan ✓' : 'Kutilmoqda ⏳'}
+              </span>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-sm text-slate-800">
+              ${m.message}
+            </div>
+
+            ${isReplied ? `
+              <div class="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-100 text-sm space-y-1">
+                <div class="flex items-center justify-between text-xs text-blue-700 font-bold">
+                  <span>💬 Sizning javobingiz:</span>
+                  <span class="text-[10px] text-blue-500 font-medium">${new Date(m.replied_at).toLocaleString('uz-UZ')}</span>
+                </div>
+                <p class="text-slate-800 font-medium">${m.reply}</p>
+              </div>
+            ` : `
+              <div class="pt-2 space-y-2">
+                <textarea id="replyInput_${m.id}" rows="2" placeholder="O'quvchiga anonim javob yozing..." class="w-full p-3 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-blue-600"></textarea>
+                <div class="flex justify-end">
+                  <button onclick="sendReply('${m.id}')" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 flex items-center gap-1.5">
+                    <span>✈️</span>
+                    <span>Javobni Telegramga jo'natish</span>
+                  </button>
+                </div>
+              </div>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function sendReply(msgId) {
+      const input = document.getElementById(`replyInput_${msgId}`);
+      const text = input ? input.value.trim() : '';
+      if (!text) return alert('Iltimos, javob matnini yozing!');
+
+      try {
+        const res = await fetch('/api/starssa/anonymous-messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message_id: msgId, reply: text })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert("✅ Javob muvaffaqiyatli yuborildi va o'quvchiga yetkazildi!");
+          loadMessages();
+        } else {
+          alert('Xatolik: ' + (data.error || 'Noma`lum'));
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

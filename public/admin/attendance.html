@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Davomat Nazorati — E-STARSSA (Admin)</title>
+  <link rel="icon" href="/icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/app.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+  <div id="layoutContainer" class="min-h-[100dvh] flex flex-col md:flex-row">
+    
+    <main class="flex-1 flex flex-col min-w-0 pb-20 md:pb-6 overflow-y-auto">
+      <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Umumiy Davomat Nazorati</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Barcha guruhlar davomati va bayram kunlari</p>
+        </div>
+        <button onclick="openHolidayModal()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm shadow-md transition flex items-center gap-1.5">
+          <span>🌴</span>
+          <span>Dam olish / Bayram belgilash</span>
+        </button>
+      </header>
+
+      <div class="p-4 sm:p-8 space-y-4 max-w-5xl w-full mx-auto">
+        <div id="sessionsContainer" class="space-y-4">
+          <p class="text-sm text-slate-400">Davomatlar yuklanmoqda...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Holiday Modal -->
+  <div id="holidayModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <h3 class="font-bold text-slate-900 text-lg">Bayram / Dam olish kuni belgilash</h3>
+      <form id="holidayForm" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Sana *</label>
+          <input id="holDate" type="date" required class="w-full p-2.5 rounded-xl border border-slate-200 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Guruh (yoki Barchasi) *</label>
+          <input id="holGroup" required value="Barchasi" class="w-full p-2.5 rounded-xl border border-slate-200 text-sm" />
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-3">
+          <button type="button" onclick="closeHolidayModal()" class="px-4 py-2 rounded-xl text-slate-600 font-bold text-xs">Bekor qilish</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-500 text-white font-bold text-xs">Belgilash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    async function init() {
+      const user = await EStarssa.requireAuth(['ADMIN']);
+      if (!user) return;
+      EStarssa.renderLayout('/admin/attendance', user.role, user);
+
+      loadSessions();
+    }
+
+    async function loadSessions() {
+      try {
+        const res = await fetch('/api/admin/attendance');
+        const data = await res.json();
+        const container = document.getElementById('sessionsContainer');
+
+        if (!Array.isArray(data) || data.length === 0) {
+          container.innerHTML = `<p class="p-8 text-center text-sm text-slate-400">Hozircha davomat yozuvlari topilmadi.</p>`;
+          return;
+        }
+
+        container.innerHTML = data.map(s => {
+          const d = new Date(s.date).toLocaleDateString('uz-UZ');
+          const isHoliday = s.status === 'HOLIDAY';
+          const isApproved = s.status === 'APPROVED';
+
+          return `
+            <div class="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="font-bold text-base text-slate-900">${s.group_name} — ${d}</h3>
+                  <p class="text-xs text-slate-400">Kiritdi: ${s.created_by?.full_name || 'Starssa'} • ${s.records?.length || 0} ta o'quvchi</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-bold ${isHoliday ? 'bg-amber-100 text-amber-800' : isApproved ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">
+                  ${isHoliday ? '🌴 Bayram / Dam olish' : isApproved ? 'Tasdiqlangan ✓' : s.status}
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function openHolidayModal() {
+      document.getElementById('holDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('holidayModal').classList.remove('hidden');
+    }
+    function closeHolidayModal() {
+      document.getElementById('holidayModal').classList.add('hidden');
+    }
+
+    document.getElementById('holidayForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const date = document.getElementById('holDate').value;
+      const group_name = document.getElementById('holGroup').value.trim();
+
+      try {
+        const res = await fetch('/api/admin/attendance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date, group_name })
+        });
+        if (res.ok) {
+          closeHolidayModal();
+          loadSessions();
+        } else {
+          alert('Xatolik yuz berdi');
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

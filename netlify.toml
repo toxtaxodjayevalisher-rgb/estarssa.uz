@@ -1,14 +1,38 @@
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+[build]
+  publish = "public"
 
-[functions]
-  directory = "netlify/functions"
+[[redirects]]
+  from = "/starssa"
+  to = "/starssa/index.html"
+  status = 200
 
-[functions."morning-attendance"]
-  schedule = "35 3 * * *"
+[[redirects]]
+  from = "/starssa/*"
+  to = "/starssa/:splat.html"
+  status = 200
 
-[functions."students-discipline"]
-  schedule = "30 6 * * *"
+[[redirects]]
+  from = "/ustoz"
+  to = "/ustoz/index.html"
+  status = 200
 
-[functions."afternoon-approval"]
-  schedule = "0 9 * * *"
+[[redirects]]
+  from = "/ustoz/*"
+  to = "/ustoz/:splat.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/*"
+  to = "/admin/:splat.html"
+  status = 200
+
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
+

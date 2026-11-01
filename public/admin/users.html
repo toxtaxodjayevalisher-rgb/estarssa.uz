@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akkauntlar — E-STARSSA (Admin)</title>
+  <link rel="icon" href="/icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/app.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+  <div id="layoutContainer" class="min-h-[100dvh] flex flex-col md:flex-row">
+    
+    <main class="flex-1 flex flex-col min-w-0 pb-20 md:pb-6 overflow-y-auto">
+      <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Foydalanuvchi Akkauntlari</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Starssa va Ustozlar tizimga kirish akkauntlari</p>
+        </div>
+        <button onclick="openCreateUserModal()" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-purple-500/20 transition flex items-center gap-1.5">
+          <span>+</span>
+          <span>Yangi Akkaunt</span>
+        </button>
+      </header>
+
+      <div class="p-4 sm:p-8 space-y-6 max-w-5xl w-full mx-auto">
+        <div class="flex items-center gap-3">
+          <input id="userSearchInput" oninput="filterUsers()" placeholder="Login yoki ism bo'yicha qidirish..." class="flex-1 p-2.5 rounded-xl border border-slate-200 bg-white text-sm outline-none focus:ring-2 focus:ring-purple-600" />
+          <select id="userRoleFilter" onchange="filterUsers()" class="p-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700">
+            <option value="">Barcha rollar</option>
+            <option value="STARSSA">Starssa</option>
+            <option value="USTOZ">Ustoz</option>
+          </select>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div id="usersList" class="divide-y divide-slate-100">
+            <p class="p-8 text-center text-sm text-slate-400">Akkauntlar yuklanmoqda...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- User Modal -->
+  <div id="userModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 id="modalTitle" class="font-bold text-slate-900 text-base sm:text-lg">Akkaunt yaratish</h3>
+        <button onclick="closeUserModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+      </div>
+
+      <form id="userForm" class="space-y-3">
+        <input type="hidden" id="userId" />
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">F.I.SH *</label>
+          <input id="userFullName" required placeholder="To'liq ismi" class="w-full p-2.5 rounded-xl border border-slate-200 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Login (Username) *</label>
+          <input id="userUsername" required placeholder="masalan: starssa104" class="w-full p-2.5 rounded-xl border border-slate-200 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Parol <span id="pwdHint" class="text-slate-400 font-normal"></span></label>
+          <input id="userPassword" type="password" placeholder="Parol kiriting" class="w-full p-2.5 rounded-xl border border-slate-200 text-sm" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Roli *</label>
+            <select id="userRole" class="w-full p-2.5 rounded-xl border border-slate-200 text-sm font-bold bg-white">
+              <option value="STARSSA">Starssa</option>
+              <option value="USTOZ">Ustoz</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Biriktirilgan guruh</label>
+            <input id="userGroup" placeholder="IG2-26" class="w-full p-2.5 rounded-xl border border-slate-200 text-sm" />
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-3">
+          <button type="button" onclick="closeUserModal()" class="px-4 py-2 rounded-xl text-slate-600 font-bold text-xs">Bekor qilish</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-xs shadow-md shadow-purple-500/20">Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let users = [];
+
+    async function init() {
+      const user = await EStarssa.requireAuth(['ADMIN']);
+      if (!user) return;
+      EStarssa.renderLayout('/admin/users', user.role, user);
+
+      loadUsers();
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/users');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          users = data;
+          filterUsers();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function filterUsers() {
+      const q = document.getElementById('userSearchInput').value.toLowerCase().trim();
+      const role = document.getElementById('userRoleFilter').value;
+
+      const filtered = users.filter(u => {
+        const matchQ = u.full_name?.toLowerCase().includes(q) || u.username?.toLowerCase().includes(q);
+        const matchR = !role || u.role === role;
+        return matchQ && matchR;
+      });
+
+      const list = document.getElementById('usersList');
+      if (filtered.length === 0) {
+        list.innerHTML = `<p class="p-8 text-center text-sm text-slate-400">Akkauntlar topilmadi.</p>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(u => `
+        <div class="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50 transition">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-2xl ${u.role === 'STARSSA' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'} font-black text-sm flex items-center justify-center">
+              ${u.role[0]}
+            </span>
+            <div>
+              <p class="font-bold text-slate-900 text-sm sm:text-base">${u.full_name || 'Noma`lum'}</p>
+              <div class="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                <span class="font-semibold text-slate-600">@${u.username}</span>
+                <span>•</span>
+                <span class="font-bold ${u.role === 'STARSSA' ? 'text-blue-600' : 'text-emerald-600'}">${u.role}</span>
+                <span>•</span>
+                <span>${u.assigned_group || 'Barchasi'}</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openEditUserModal('${u.id}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">
+              Tahrirlash
+            </button>
+            <button onclick="deleteUser('${u.id}')" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs">
+              O'chirish
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openCreateUserModal() {
+      document.getElementById('modalTitle').textContent = "Yangi akkaunt yaratish";
+      document.getElementById('userId').value = '';
+      document.getElementById('userFullName').value = '';
+      document.getElementById('userUsername').value = '';
+      document.getElementById('userPassword').value = '';
+      document.getElementById('userPassword').required = true;
+      document.getElementById('pwdHint').textContent = "*";
+      document.getElementById('userRole').value = 'STARSSA';
+      document.getElementById('userGroup').value = '';
+      document.getElementById('userModal').classList.remove('hidden');
+    }
+
+    function openEditUserModal(id) {
+      const u = users.find(x => x.id === id);
+      if (!u) return;
+      document.getElementById('modalTitle').textContent = "Akkauntni tahrirlash";
+      document.getElementById('userId').value = u.id;
+      document.getElementById('userFullName').value = u.full_name || '';
+      document.getElementById('userUsername').value = u.username;
+      document.getElementById('userPassword').value = '';
+      document.getElementById('userPassword').required = false;
+      document.getElementById('pwdHint').textContent = "(faqat o'zgartirilsa)";
+      document.getElementById('userRole').value = u.role;
+      document.getElementById('userGroup').value = u.assigned_group || '';
+      document.getElementById('userModal').classList.remove('hidden');
+    }
+
+    function closeUserModal() {
+      document.getElementById('userModal').classList.add('hidden');
+    }
+
+    document.getElementById('userForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('userId').value;
+      const full_name = document.getElementById('userFullName').value.trim();
+      const username = document.getElementById('userUsername').value.trim();
+      const password = document.getElementById('userPassword').value;
+      const role = document.getElementById('userRole').value;
+      const assigned_group = document.getElementById('userGroup').value.trim();
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/users/${id}` : '/api/users';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full_name, username, password, role, assigned_group })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          closeUserModal();
+          loadUsers();
+        } else {
+          alert('Xatolik: ' + (data.error || 'Noma`lum'));
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    async function deleteUser(id) {
+      if (!confirm('Haqiqatan ham ushbu akkauntni o`chirmoqchimisiz?')) return;
+      try {
+        const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          loadUsers();
+        } else {
+          alert('O`chirishda xatolik yuz berdi');
+        }
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

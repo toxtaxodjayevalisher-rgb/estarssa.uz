@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-STARSSA</title>
+  <link rel="icon" href="/icon.png">
+  <script>
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(user => {
+        if (user && user.role) {
+          window.location.href = '/' + user.role.toLowerCase() + '/index.html';
+        } else {
+          window.location.href = '/login.html';
+        }
+      })
+      .catch(() => {
+        window.location.href = '/login.html';
+      });
+  </script>
+</head>
+<body style="background:#0a1128; color:#fff; display:flex; align-items:center; justify-content:center; height:100vh; font-family:sans-serif;">
+  <p>Yuklanmoqda...</p>
+</body>
+</html>

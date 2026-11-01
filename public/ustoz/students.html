@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>O'quvchilar — E-STARSSA (Ustoz)</title>
+  <link rel="icon" href="/icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/app.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+  <div id="layoutContainer" class="min-h-[100dvh] flex flex-col md:flex-row">
+    
+    <main class="flex-1 flex flex-col min-w-0 pb-20 md:pb-6 overflow-y-auto">
+      <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Guruh O'quvchilari</h1>
+          <p class="text-xs sm:text-sm text-slate-500">O'quvchilar ma'lumotlari va monitoring</p>
+        </div>
+      </header>
+
+      <div class="p-4 sm:p-8 space-y-6 max-w-5xl w-full mx-auto">
+        <div class="flex items-center gap-3">
+          <div class="relative flex-1">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">🔍</span>
+            <input id="searchInput" oninput="filterStudents()" placeholder="Ism yoki telefon bo'yicha qidirish..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm outline-none focus:ring-2 focus:ring-emerald-600 transition" />
+          </div>
+          <span id="studentsCountBadge" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 whitespace-nowrap">
+            Jami: 0 ta
+          </span>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div id="studentsList" class="divide-y divide-slate-100">
+            <p class="p-8 text-center text-sm text-slate-400">O'quvchilar yuklanmoqda...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let students = [];
+
+    async function init() {
+      const user = await EStarssa.requireAuth(['USTOZ', 'ADMIN']);
+      if (!user) return;
+      EStarssa.renderLayout('/ustoz/students', user.role, user);
+
+      loadStudents();
+    }
+
+    async function loadStudents() {
+      try {
+        const res = await fetch('/api/students');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          students = data;
+          document.getElementById('studentsCountBadge').textContent = `Jami: ${students.length} ta`;
+          filterStudents();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function filterStudents() {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      const filtered = students.filter(s => 
+        s.full_name.toLowerCase().includes(q) || 
+        (s.phone && s.phone.includes(q))
+      );
+
+      const list = document.getElementById('studentsList');
+      if (filtered.length === 0) {
+        list.innerHTML = `<p class="p-8 text-center text-sm text-slate-400">O'quvchilar topilmadi.</p>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map((s, idx) => `
+        <div class="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50/70 transition">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center flex-shrink-0">
+              ${idx + 1}
+            </span>
+            <div>
+              <p class="font-bold text-slate-900 text-sm sm:text-base">${s.full_name}</p>
+              <p class="text-xs text-slate-400">Guruh: ${s.group_name} • 📞 ${s.phone || 'Telefon kiritilmagan'}</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    init();
+  </script>
+</body>
+</html>

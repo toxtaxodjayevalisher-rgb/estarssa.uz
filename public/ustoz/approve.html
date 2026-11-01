@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Davomatni Tasdiqlash — E-STARSSA</title>
+  <link rel="icon" href="/icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/app.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+  <div id="layoutContainer" class="min-h-[100dvh] flex flex-col md:flex-row">
+    
+    <main class="flex-1 flex flex-col min-w-0 pb-20 md:pb-6 overflow-y-auto">
+      <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Tasdiqlash Kutilayotgan Davomatlar</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Starssalar tomonidan yuborilgan davomatlar</p>
+        </div>
+        <button onclick="loadPendingSessions()" class="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600">
+          🔄
+        </button>
+      </header>
+
+      <div class="p-4 sm:p-8 space-y-6 max-w-4xl w-full mx-auto">
+        <div id="sessionsContainer" class="space-y-6">
+          <p class="text-sm text-slate-400">Tekshirilmoqda...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let sessions = [];
+
+    async function init() {
+      const user = await EStarssa.requireAuth(['USTOZ', 'ADMIN']);
+      if (!user) return;
+      EStarssa.renderLayout('/ustoz/approve', user.role, user);
+
+      loadPendingSessions();
+    }
+
+    async function loadPendingSessions() {
+      try {
+        const res = await fetch('/api/attendance/approve');
+        const data = await res.json();
+        const container = document.getElementById('sessionsContainer');
+
+        if (!Array.isArray(data) || data.length === 0) {
+          container.innerHTML = `
+            <div class="p-12 text-center text-slate-500 bg-white rounded-3xl border border-slate-200 font-medium">
+              🎉 Hozircha tasdiqlanadigan davomat yo'q. Barcha guruhlar ko'rib chiqilgan!
+            </div>
+          `;
+          return;
+        }
+
+        sessions = data;
+        container.innerHTML = sessions.map(s => {
+          const d = new Date(s.date).toLocaleDateString('uz-UZ');
+          const keldi = s.records.filter(r => r.status === 'KELDI');
+          const kechikdi = s.records.filter(r => r.status === 'KECHIKIB_KELDI');
+          const sababli = s.records.filter(r => r.status === 'UZR_LI');
+          const kelmadi = s.records.filter(r => r.status === 'KELMADI');
+
+          return `
+            <div class="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 class="text-lg sm:text-xl font-bold text-slate-900">${s.group_name} — ${d}</h2>
+                  <p class="text-xs text-slate-400 mt-0.5">Jami o'quvchi: ${s.records.length} ta</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button onclick="handleAction('${s.id}', 'approve')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20">
+                    ✓ Tasdiqlash
+                  </button>
+                  <button onclick="handleAction('${s.id}', 'redo')" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs">
+                    ↺ Qayta qilish
+                  </button>
+                  <button onclick="handleAction('${s.id}', 'reject')" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs">
+                    ✕ Bekor qilish
+                  </button>
+                </div>
+              </div>
+
+              <!-- Breakdown -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div class="p-3 rounded-2xl bg-emerald-50 text-emerald-800">
+                  <p class="font-bold">Kelganlar (${keldi.length}):</p>
+                  <p class="text-[11px] text-emerald-600 mt-1">${keldi.map(k => k.student?.full_name).join(', ') || 'Hech kim'}</p>
+                </div>
+                <div class="p-3 rounded-2xl bg-amber-50 text-amber-800">
+                  <p class="font-bold">Kechikkanlar (${kechikdi.length}):</p>
+                  <p class="text-[11px] text-amber-600 mt-1">${kechikdi.map(k => k.student?.full_name).join(', ') || 'Hech kim'}</p>
+                </div>
+                <div class="p-3 rounded-2xl bg-blue-50 text-blue-800">
+                  <p class="font-bold">Sabablilar (${sababli.length}):</p>
+                  <p class="text-[11px] text-blue-600 mt-1">${sababli.map(k => k.student?.full_name).join(', ') || 'Hech kim'}</p>
+                </div>
+                <div class="p-3 rounded-2xl bg-rose-50 text-rose-800">
+                  <p class="font-bold">Kelmaganlar (${kelmadi.length}):</p>
+                  <p class="text-[11px] text-rose-600 mt-1">${kelmadi.map(k => k.student?.full_name).join(', ') || 'Hech kim'}</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function handleAction(sessionId, action) {
+      const confirmText = action === 'approve' 
+        ? "Ushbu davomatni tasdiqlaysizmi?" 
+        : action === 'redo' 
+        ? "Davomatni qaytadan kiritish uchun Starssaga qaytarasizmi?" 
+        : "Davomatni butunlay bekor qilasizmi?";
+      if (!confirm(confirmText)) return;
+
+      try {
+        const res = await fetch('/api/attendance/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId, action })
+        });
+        if (res.ok) {
+          alert("Amal muvaffaqiyatli bajarildi!");
+          loadPendingSessions();
+        } else {
+          alert("Xatolik yuz berdi");
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

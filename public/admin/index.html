@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Paneli — E-STARSSA</title>
+  <link rel="icon" href="/icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/app.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+  <div id="layoutContainer" class="min-h-[100dvh] flex flex-col md:flex-row">
+    
+    <main class="flex-1 flex flex-col min-w-0 pb-20 md:pb-6 overflow-y-auto">
+      <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Admin Boshqaruv Markazi</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Tizim parametrlari, statistika va foydalanuvchilar</p>
+        </div>
+      </header>
+
+      <div class="p-4 sm:p-8 space-y-6 max-w-5xl w-full mx-auto">
+        
+        <!-- Stats Summary -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-400 uppercase">Jami O'quvchilar</span>
+            <p id="totalStudentsStat" class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">0</p>
+          </div>
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-400 uppercase">Akkauntlar</span>
+            <p id="totalUsersStat" class="text-2xl sm:text-3xl font-black text-purple-600 mt-1">0</p>
+          </div>
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-400 uppercase">Guruhlar</span>
+            <p id="totalGroupsStat" class="text-2xl sm:text-3xl font-black text-blue-600 mt-1">0</p>
+          </div>
+          <div class="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold text-slate-400 uppercase">Bugungi Davomat</span>
+            <p id="todayAttendanceStat" class="text-2xl sm:text-3xl font-black text-emerald-600 mt-1">Faol</p>
+          </div>
+        </div>
+
+        <!-- Admin modules grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <a href="/admin/users.html" class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm hover:border-purple-300 transition space-y-2 block">
+            <span class="text-3xl">🔑</span>
+            <h3 class="font-bold text-slate-900 text-lg">Akkauntlar boshqaruvi</h3>
+            <p class="text-xs text-slate-500">Starssa va Ustozlar uchun yangi login/parollar berish, tahrirlash</p>
+          </a>
+
+          <a href="/admin/students.html" class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm hover:border-blue-300 transition space-y-2 block">
+            <span class="text-3xl">👥</span>
+            <h3 class="font-bold text-slate-900 text-lg">O'quvchilar ro'yxati</h3>
+            <p class="text-xs text-slate-500">Barcha guruh o'quvchilarini ko'rish, yangi qo'shish, Excel import/export</p>
+          </a>
+
+          <a href="/admin/attendance.html" class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm hover:border-emerald-300 transition space-y-2 block">
+            <span class="text-3xl">📋</span>
+            <h3 class="font-bold text-slate-900 text-lg">Davomat Nazorati</h3>
+            <p class="text-xs text-slate-500">Barcha guruhlar davomatini nazorat qilish va bayram kunlarini belgilash</p>
+          </a>
+
+          <a href="/admin/ratings.html" class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm hover:border-amber-300 transition space-y-2 block">
+            <span class="text-3xl">🏆</span>
+            <h3 class="font-bold text-slate-900 text-lg">Reyting va Sertifikatlar</h3>
+            <p class="text-xs text-slate-500">Eng namunali guruhlar reytingi va sertifikat yuklab olish</p>
+          </a>
+
+          <a href="/admin/announcements.html" class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm hover:border-pink-300 transition space-y-2 block">
+            <span class="text-3xl">📢</span>
+            <h3 class="font-bold text-slate-900 text-lg">E'lonlar</h3>
+            <p class="text-xs text-slate-500">Umumiy maktab e'lonlarini barcha guruhlarga yuborish</p>
+          </a>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    async function init() {
+      const user = await EStarssa.requireAuth(['ADMIN']);
+      if (!user) return;
+      EStarssa.renderLayout('/admin', user.role, user);
+
+      try {
+        const [sRes, uRes, gRes] = await Promise.all([
+          fetch('/api/students'),
+          fetch('/api/users'),
+          fetch('/api/groups')
+        ]);
+        const students = await sRes.json();
+        const users = await uRes.json();
+        const groups = await gRes.json();
+
+        if (Array.isArray(students)) document.getElementById('totalStudentsStat').textContent = students.length;
+        if (Array.isArray(users)) document.getElementById('totalUsersStat').textContent = users.length;
+        if (Array.isArray(groups)) document.getElementById('totalGroupsStat').textContent = groups.length;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

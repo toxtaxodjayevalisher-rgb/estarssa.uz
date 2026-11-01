@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uyga Vazifalar — E-STARSSA</title>
+  <link rel="icon" href="/icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/app.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+  <div id="layoutContainer" class="min-h-[100dvh] flex flex-col md:flex-row">
+    
+    <main class="flex-1 flex flex-col min-w-0 pb-20 md:pb-6 overflow-y-auto">
+      <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Uyga Vazifalar</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Yangi vazifa kiritish va guruhga jo'natish</p>
+        </div>
+      </header>
+
+      <div class="p-4 sm:p-8 space-y-8 max-w-4xl w-full mx-auto">
+        
+        <!-- Form Card -->
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm">
+          <h2 class="text-lg font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+            <span>✏️</span> Yangi vazifa kiritish
+          </h2>
+
+          <form id="hwForm" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Guruh nomi *</label>
+                <input id="hwGroup" required placeholder="Masalan: IG2-26" class="w-full border border-slate-200 p-3 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Qaysi kunga (Sana) *</label>
+                <input id="hwDate" type="date" required class="w-full border border-slate-200 p-3 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none text-sm" />
+              </div>
+            </div>
+
+            <div id="tasksContainer" class="space-y-3 pt-2">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Fanlar va vazifalar *</label>
+              <div class="task-row flex flex-col sm:flex-row gap-2">
+                <input class="task-subject sm:w-1/3 border border-slate-200 p-2.5 rounded-xl bg-slate-50 text-sm font-semibold" placeholder="Fan nomi (masalan: Fizika)" required />
+                <input class="task-content flex-1 border border-slate-200 p-2.5 rounded-xl bg-slate-50 text-sm" placeholder="Uyga berilgan vazifa..." required />
+              </div>
+            </div>
+
+            <button type="button" onclick="addTaskRow()" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+              <span>+</span> Yana bir fan qo'shish
+            </button>
+
+            <div class="pt-2">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Rasm biriktirish (ixtiyoriy)</label>
+              <input id="hwImage" type="file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+            </div>
+
+            <button id="hwSubmitBtn" type="submit" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/25 transition-all mt-4 flex items-center justify-center gap-2">
+              <span>🚀</span>
+              <span>Guruhga yuborish va saqlash</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Previous Homeworks -->
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm">
+          <h2 class="text-lg font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100">
+            Avvalgi kiritilgan vazifalar
+          </h2>
+          <div id="homeworksList" class="space-y-4">
+            <p class="text-sm text-slate-400">Yuklanmoqda...</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    async function init() {
+      const user = await EStarssa.requireAuth(['STARSSA', 'ADMIN']);
+      if (!user) return;
+      EStarssa.renderLayout('/starssa/homework', user.role, user);
+
+      document.getElementById('hwGroup').value = user.assigned_group || 'IG2-26';
+      
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('hwDate').value = tomorrow.toISOString().split('T')[0];
+
+      loadHomeworks();
+    }
+
+    function addTaskRow() {
+      const div = document.createElement('div');
+      div.className = 'task-row flex flex-col sm:flex-row gap-2';
+      div.innerHTML = `
+        <input class="task-subject sm:w-1/3 border border-slate-200 p-2.5 rounded-xl bg-slate-50 text-sm font-semibold" placeholder="Fan nomi" required />
+        <input class="task-content flex-1 border border-slate-200 p-2.5 rounded-xl bg-slate-50 text-sm" placeholder="Uyga berilgan vazifa..." required />
+        <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 px-2 font-bold text-lg">&times;</button>
+      `;
+      document.getElementById('tasksContainer').appendChild(div);
+    }
+
+    async function loadHomeworks() {
+      try {
+        const res = await fetch('/api/homework?status=ACTIVE');
+        const data = await res.json();
+        const list = document.getElementById('homeworksList');
+
+        if (!Array.isArray(data) || data.length === 0) {
+          list.innerHTML = `<p class="text-sm text-slate-400">Hozircha vazifalar yo'q.</p>`;
+          return;
+        }
+
+        list.innerHTML = data.map(h => {
+          const d = new Date(h.date).toLocaleDateString('uz-UZ');
+          return `
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-bold text-blue-600 text-sm">${h.subject}</span>
+                <span class="text-xs text-slate-400 font-medium">${d} (${h.group_name})</span>
+              </div>
+              <p class="text-sm text-slate-700 whitespace-pre-wrap">${h.content}</p>
+              ${h.image_url ? `<img src="${h.image_url}" class="mt-2 rounded-xl max-h-48 object-cover border border-slate-200" />` : ''}
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById('hwForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('hwSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = "Yuborilmoqda...";
+
+      const group_name = document.getElementById('hwGroup').value;
+      const date = document.getElementById('hwDate').value;
+      const taskRows = document.querySelectorAll('.task-row');
+
+      const tasks = [];
+      taskRows.forEach(row => {
+        const sub = row.querySelector('.task-subject').value.trim();
+        const con = row.querySelector('.task-content').value.trim();
+        if (sub && con) tasks.push({ subject: sub, content: con });
+      });
+
+      const body = new FormData();
+      body.append('group_name', group_name);
+      body.append('date', date);
+      body.append('tasks', JSON.stringify(tasks));
+
+      const imgInput = document.getElementById('hwImage');
+      if (imgInput.files[0]) {
+        body.append('image', imgInput.files[0]);
+      }
+
+      try {
+        const res = await fetch('/api/homework', { method: 'POST', body });
+        if (res.ok) {
+          alert('✅ Uyga vazifa muvaffaqiyatli saqlandi va Telegram guruhiga yuborildi!');
+          imgInput.value = '';
+          loadHomeworks();
+        } else {
+          const err = await res.text();
+          alert('Xatolik: ' + err);
+        }
+      } catch (err) {
+        alert('Server xatosi: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>🚀</span><span>Guruhga yuborish va saqlash</span>';
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

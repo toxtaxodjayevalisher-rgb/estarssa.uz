@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Davomat Tarixi — E-STARSSA</title>
+  <link rel="icon" href="/icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/app.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+  <div id="layoutContainer" class="min-h-[100dvh] flex flex-col md:flex-row">
+    
+    <main class="flex-1 flex flex-col min-w-0 pb-20 md:pb-6 overflow-y-auto">
+      <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Davomat Tarixi</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Avvalgi topshirilgan davomatlar</p>
+        </div>
+        <select id="timeFilter" onchange="renderSessions()" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 outline-none">
+          <option value="ALL">Barchasi</option>
+          <option value="TODAY">Bugun</option>
+          <option value="WEEK">Shu hafta</option>
+          <option value="MONTH">Shu oy</option>
+        </select>
+      </header>
+
+      <div class="p-4 sm:p-8 space-y-4 max-w-4xl w-full mx-auto">
+        <div id="sessionsContainer" class="space-y-4">
+          <p class="text-sm text-slate-400">Tarix yuklanmoqda...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let sessions = [];
+
+    async function init() {
+      const user = await EStarssa.requireAuth(['STARSSA', 'ADMIN']);
+      if (!user) return;
+      EStarssa.renderLayout('/starssa/history', user.role, user);
+
+      loadHistory();
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch('/api/attendance/starssa-history');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          sessions = data;
+          renderSessions();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderSessions() {
+      const filter = document.getElementById('timeFilter').value;
+      const now = new Date();
+      now.setHours(0,0,0,0);
+
+      const filtered = sessions.filter(s => {
+        const d = new Date(s.date);
+        d.setHours(0,0,0,0);
+        if (filter === 'TODAY') return d.getTime() === now.getTime();
+        if (filter === 'WEEK') {
+          const w = new Date(now);
+          w.setDate(w.getDate() - 7);
+          return d >= w;
+        }
+        if (filter === 'MONTH') {
+          const m = new Date(now);
+          m.setMonth(m.getMonth() - 1);
+          return d >= m;
+        }
+        return true;
+      });
+
+      const container = document.getElementById('sessionsContainer');
+      if (filtered.length === 0) {
+        container.innerHTML = `<p class="p-8 text-center text-sm text-slate-400">Hech qanday davomat yozuvi topilmadi.</p>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(s => {
+        const d = new Date(s.date).toLocaleDateString('uz-UZ');
+        const keldi = s.records.filter(r => r.status === 'KELDI').length;
+        const kechikdi = s.records.filter(r => r.status === 'KECHIKIB_KELDI').length;
+        const sababli = s.records.filter(r => r.status === 'UZR_LI').length;
+        const kelmadi = s.records.filter(r => r.status === 'KELMADI').length;
+
+        const isApproved = s.status === 'APPROVED';
+        const isPending = s.status === 'SENT_FOR_APPROVAL';
+
+        return `
+          <div class="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-base text-slate-900">${s.group_name} — ${d}</h3>
+                <p class="text-xs text-slate-400">Jami o'quvchi: ${s.records.length} ta</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold ${isApproved ? 'bg-emerald-100 text-emerald-800' : isPending ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'}">
+                ${isApproved ? 'Tasdiqlangan ✓' : isPending ? 'Kutilmoqda ⏳' : 'Qoralamada'}
+              </span>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2 pt-1 text-center">
+              <div class="p-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs">
+                ${keldi} Keldi
+              </div>
+              <div class="p-2 rounded-xl bg-amber-50 text-amber-700 font-bold text-xs">
+                ${kechikdi} Kechikdi
+              </div>
+              <div class="p-2 rounded-xl bg-blue-50 text-blue-700 font-bold text-xs">
+                ${sababli} Sababli
+              </div>
+              <div class="p-2 rounded-xl bg-rose-50 text-rose-700 font-bold text-xs">
+                ${kelmadi} Kelmadi
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    init();
+  </script>
+</body>
+</html>

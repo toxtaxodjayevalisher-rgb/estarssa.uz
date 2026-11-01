@@ -7,7 +7,7 @@ services:
     startCommand: npm start
     envVars:
       - key: DATABASE_URL
-        sync: false
+        value: postgresql://e_starssa_t4xl_user:52UeaNHC8N53H26AMhRz9Xf0joTMLlDi@dpg-dbjhr6lg1s2s73fpmdlg-a.virginia-postgres.render.com/e_starssa_t4xl?sslmode=require
       - key: TELEGRAM_BOT_TOKEN
         value: 8983797302:AAFBsLv62LUEQPsmqZCIzyTmXA_UIpJx5hQ
       - key: JWT_SECRET
